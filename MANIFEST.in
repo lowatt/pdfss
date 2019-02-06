@@ -1,0 +1,10 @@
+include requirements.txt
+include tox.ini
+include COPYING
+
+include *.py
+
+recursive-include test *.py *.yml
+recursive-include test/data *.pdf
+
+prune .tox
