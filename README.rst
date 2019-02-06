@@ -16,6 +16,8 @@ Install
 API
 ---
 
+::
+
   $ pydoc pdfss
 
 Additional informations
