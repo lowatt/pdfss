@@ -77,7 +77,7 @@ Other PDF utilities
 Text manipulation
 ~~~~~~~~~~~~~~~~~
 
-The "c\\_\\*" function family are *converter* turning a string into something
+The "c\\_\\*" functions family are *converters* turning a string into something
 else. First part of the name describes the accepted string, second part the
 returned type or types. For instance :func:`c_amount_float_unit` convert a
 string like `"345 €"` into a float (`345.`) and a unit (`'€'`).
