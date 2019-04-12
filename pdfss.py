@@ -418,7 +418,8 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
                 state, ltobj = ltobjs_generator.send((recurs, state))
                 continue
 
-            if tables_data is None and state in initial_states:
+            if tables_data is None and state in initial_states \
+               and ltobj is not None:
                 if ltobj.lower_text.startswith(start_collect_text):
                     tables_data = defaultdict(dict)
 
