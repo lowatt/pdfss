@@ -427,7 +427,8 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
                 if state == 'end_of_page':
                     # end of page, all the tables'data should now have been
                     # collected
-                    state = on_collect_end(previous_state, data, tables_data)
+                    state = on_collect_end(previous_state, data, tables_data) \
+                        or state
                     tables_data = None
 
                 elif type(ltobj) is LTTextLineHorizontal:
