@@ -99,6 +99,7 @@ from collections import defaultdict
 from datetime import date
 from functools import update_wrapper, wraps
 from io import BytesIO, TextIOWrapper
+import logging
 import sys
 
 from pdfminer.high_level import extract_text_to_fp
@@ -109,6 +110,9 @@ from pdfminer.layout import (
     LTTextLine, LTTextLineHorizontal)
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
+
+
+LOGGER = logging.getLogger('lowatt.pdfss')
 
 
 def c_dmy_date(date_string):
@@ -273,9 +277,13 @@ def _ltobjs_generator(layout, state=None):
     stack = list(reversed(layout._objs))
     while stack:
         ltobj = stack.pop()
-        recurs, state = (yield state, ltobj)
+        recurs, new_state = (yield state, ltobj)
         if recurs is None or recurs is True:
             stack += reversed(ltobj._objs)
+
+        if new_state != state:
+            LOGGER.debug('State change from %s to %s', state, new_state)
+            state = new_state
 
     # inject special state to notify end of page
     previous_state = state
@@ -294,7 +302,7 @@ def debug_processor(ltobjs_generator, data):
     """
     state, ltobj = next(ltobjs_generator)
     while True:
-        print('[{}] {!r}'.format(
+        LOGGER.info('[{}] {!r}'.format(
             state, ltobj.lower_text if ltobj is not None else None))
         recurs, state = (yield state, ltobj)
         try:
