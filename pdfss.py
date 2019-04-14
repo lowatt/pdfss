@@ -279,7 +279,10 @@ def _ltobjs_generator(layout, state=None):
         ltobj = stack.pop()
         recurs, new_state = (yield state, ltobj)
         if recurs is None or recurs is True:
-            stack += reversed(ltobj._objs)
+            try:
+                stack += reversed(ltobj._objs)
+            except AttributeError:
+                pass  # no subobjects, eg ltobj is LTChar
 
         if new_state != state:
             LOGGER.debug('State change from %s to %s', state, new_state)
