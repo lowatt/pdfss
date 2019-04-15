@@ -562,6 +562,10 @@ def scrap_ltpage(ltpage, processors, data, state=None):
 
     :return: the new state
     """
+    if len(ltpage._objs) == 1 and type(ltpage._objs[0]) is LTFigure:
+        LOGGER.warning("Skip figure only page, is it a scanned document?")
+        return state
+
     # initialize the processors chain with _ltobjs_generator on the top
     generator = _ltobjs_generator(ltpage, state)
     for processor in processors:
