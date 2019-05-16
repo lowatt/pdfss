@@ -132,12 +132,12 @@ def c_amount_float(value):
     >>> c_amount_float('25 028,80')
     25028.8
     >>> c_amount_float('4,326 c€ ')
-    0.004326
+    0.04326
     """
     value = value.strip().replace('€', '')
     if value[-1] == 'c':
         value = value[:-1]
-        factor = 0.001
+        factor = 0.01
     else:
         factor = 1
     return round(c_str_float(value) * factor, 6)
