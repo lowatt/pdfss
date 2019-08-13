@@ -173,7 +173,7 @@ def c_str_period(value):
 def c_str_float_unit(value):
     """
     >>> c_str_float_unit('25 028 kWh')
-    (25028.0, 'kWh')
+    (25028, 'kWh')
     """
     float_str, unit = value.rsplit(' ', 1)
     return c_str_float(float_str), unit.strip()
@@ -183,8 +183,14 @@ def c_str_float(value):
     """
     >>> c_str_float('25 028,80')
     25028.8
+    >>> c_str_float('25')
+    25
     """
-    return float(value.replace(' ', '').replace(',', '.'))
+    value = value.replace(' ', '').replace(',', '.')
+    try:
+        return int(value)
+    except ValueError:
+        return float(value)
 
 
 def last_word(line):
