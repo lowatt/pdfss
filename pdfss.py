@@ -509,10 +509,13 @@ def regroup_lines(tables_data):
         yield stacked
 
 
-def regroup_wrapped_headers(tables_data_it):
+def regroup_wrapped_headers(tables_data_it, skip_tokens=None):
     """Iterator on `(line y coordinate, line data dict)`, folding lines
       detected as beeing wrapped part of the first column of the previous line.
     """
+    if skip_tokens is None:
+        skip_tokens = {}
+
     stacked = None
     for y, line_data in tables_data_it:
         if stacked is None:
@@ -523,11 +526,12 @@ def regroup_wrapped_headers(tables_data_it):
                 x_index = x_index[0]
                 # XXX 16 vertical spacing is arbitrary and may need adjustemnt
                 # or configuration
-                if x_index == min(stacked[1])[0] and (stacked[0] - y) < 16:
+                if (text not in skip_tokens
+                        and x_index == min(stacked[1])[0]
+                        and (stacked[0] - y) < 16):
                     # this is the following of the previous line's
                     stacked[1][min(stacked[1])] += ' ' + text
                     continue
-
             yield stacked
             stacked = (y, line_data)
     if stacked is not None:
