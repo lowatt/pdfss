@@ -100,6 +100,7 @@ from datetime import date
 from functools import update_wrapper, wraps
 from io import BytesIO, TextIOWrapper
 import logging
+import re
 import sys
 
 from pdfminer.high_level import extract_text_to_fp
@@ -174,9 +175,11 @@ def c_str_float_unit(value):
     """
     >>> c_str_float_unit('25 028 kWh')
     (25028, 'kWh')
+    >>> c_str_float_unit('- 25 028.2 € / W')
+    (-25028.2, '€ / W')
     """
-    float_str, unit = value.rsplit(' ', 1)
-    return c_str_float(float_str), unit.strip()
+    float_str, unit = re.split(r'(?=[^-\d,\. ])', value.strip(), 1)
+    return c_str_float(float_str.strip()), unit.strip()
 
 
 def c_str_float(value):
