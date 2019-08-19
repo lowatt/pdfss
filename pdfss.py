@@ -62,7 +62,6 @@ Once you get the idea:
 .. autofunction:: regroup_lines
 .. autofunction:: regroup_wrapped_headers
 .. autofunction:: iter_tables_data_columns
-.. autofunction:: build_skip_block_starting_with_processor
 .. autofunction:: build_skip_classes_processor
 .. autofunction:: base_recursion_control_processor
 .. autofunction:: debug_processor
@@ -374,18 +373,6 @@ def build_skip_classes_processor(classes):
         return type(ltobj) in classes, state
 
     return skip_classes_processor
-
-
-def build_skip_block_starting_with_processor(*skip):
-    """Return a processor that will block propagation and recursion of
-    *ltobjects* whose text starts with one of the string given as arguments.
-    """
-
-    @simple_ltobj_processor
-    def skip_block_starting_with_processor(state, ltobj, data):
-        return ltobj is not None and ltobj.lower_text.startswith(skip), state
-
-    return skip_block_starting_with_processor
 
 
 def build_store_tables_data_processor(initial_state, start_collect_text,
