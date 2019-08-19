@@ -389,7 +389,7 @@ def build_skip_block_starting_with_processor(*skip):
 
 
 def build_store_tables_data_processor(initial_state, start_collect_text,
-                                      on_collect_end):
+                                      on_collect_end, skip_prefixes=None):
     """Return a processor which will collect every *ltobject* which is not processed
     by a downward processor (i.e. whose `recurs` flag sent back is not `False`)
     into an intermediary structure, for handling once all the page has been
@@ -409,6 +409,9 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
       coordinates in the page (0 being the bottom-left corner, but they are
       returned in reverse order to start from the top left corner). It must
       returns the next state.
+
+    :param skip_prefixes: optional tuple of string prefixes that should be
+      skipped.
 
     Collected data dictionary may be simplified using :func:`regroup_lines` and
     :func:`regroup_wrapped_headers` or similar.
@@ -444,7 +447,7 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
                     tables_data = None
 
                 elif type(ltobj) is LTTextLineHorizontal:
-                    _save_ltobj(tables_data, ltobj)
+                    _save_ltobj(tables_data, ltobj, skip_prefixes)
 
             try:
                 state, ltobj = ltobjs_generator.send((recurs, state))
@@ -454,7 +457,7 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
     return store_tables_data_processor
 
 
-def _save_ltobj(tables_data, ltobj):
+def _save_ltobj(tables_data, ltobj, skip_prefixes=None):
     """Collect `ltobj` indexed by their bbox coordinates into `tables_data` so we
     may get back table structure.
     """
@@ -485,6 +488,9 @@ def _save_ltobj(tables_data, ltobj):
         last = subltobj
 
     for x0, x1, text in parts:
+        if skip_prefixes is not None and text.startswith(skip_prefixes):
+            continue
+
         tables_data[ltobj.y0][(round(x0), round(x1))] = text
 
 
