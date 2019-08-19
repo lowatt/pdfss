@@ -403,7 +403,7 @@ def build_store_tables_data_processor(initial_state, start_collect_text,
     Collected data dictionary may be simplified using :func:`regroup_lines` and
     :func:`regroup_wrapped_headers` or similar.
     """
-    if isinstance(initial_state, str):
+    if initial_state is None or isinstance(initial_state, str):
         initial_states = (initial_state,)
     else:
         initial_states = initial_state
