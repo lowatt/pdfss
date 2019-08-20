@@ -630,6 +630,15 @@ LTAnno.lower_text = property(_lower_text)
 LTChar.lower_text = property(_lower_text)
 
 
+def _ltchar_record_fontsize_init(self, matrix, font, fontsize, *args, **kwargs):
+    ltchar_init(self, matrix, font, fontsize, *args, **kwargs)
+    self.fontsize = fontsize
+
+
+ltchar_init = LTChar.__init__
+LTChar.__init__ = _ltchar_record_fontsize_init
+
+
 def _container_lower_text(self):
     return ''.join(obj.lower_text for obj in self if isinstance(obj, LTText))
 
