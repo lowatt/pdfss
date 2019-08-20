@@ -73,7 +73,7 @@ class RelayoutTC(unittest.TestCase):
                     ['Par téléphone'],
                     ['Du lundi au vendredi de 8h à 18h'],
                     ['Urgence'],
-                    ['N° de tél. dépannage : voir', 'le détail de facturation'],
+                    ['N° de tél. dépannage : voir le détail de facturation'],
                     ['par site'],
                     ['Vos informations client'],
                     ['Vos références'],
@@ -82,9 +82,9 @@ class RelayoutTC(unittest.TestCase):
                 ],
                 [
                     ['FLX22390212900027-07RS'],
-                    ['NOTRE', 'CLIENT'],
-                    ['42', 'RUE', 'DU', 'GRAS'],
-                    ['31560', 'NAILLOUX'],
+                    ['NOTRE CLIENT'],
+                    ['42 RUE DU GRAS'],
+                    ['31560 NAILLOUX'],
                 ],
                 [['COPIE']],
                 [['Service 0,05 €', '/min'], ['+ prix appel']],
@@ -93,18 +93,16 @@ class RelayoutTC(unittest.TestCase):
                     ['Facture du 01/08/2018'],
                     ['n° 1008059'],
                     ['Montant Hors TVA', '-1 882,35 €'],
-                    ['Montant TVA (payée sur', 'les débits)', '-386,88 €'],
+                    ['Montant TVA (payée sur les débits)', '-386,88 €'],
                     ['Facture TTC', '-2 269,23 €'],
                     ['Montant total (TTC)', '-2 269,23 €'],
-                    ['Compte tenu de', 'la situation de votre compte, '
+                    ['Compte tenu de la situation de votre compte, '
                      'un montant de 2 269,23 €'],
-                    ['en votre faveur vous sera remboursé sous 15', 'jours.'],
-                    ['A défaut de paiement à la date prévue,',
-                     'le montant TTC dû sera majoré de pénalités pour retard '
-                     'au taux'],
-                    ["annuel de 10,00 % et d'une",
-                     'indemnité pour frais de recouvrement par facture de '
-                     '40,00 €',
+                    ['en votre faveur vous sera remboursé sous 15 jours.'],
+                    ['A défaut de paiement à la date prévue, le montant TTC '
+                     'dû sera majoré de pénalités pour retard au taux'],
+                    ["annuel de 10,00 % et d'une indemnité pour frais de "
+                     'recouvrement par facture de 40,00 €',
                      '.'],
                     ['Les prochaines étapes'],
                     ['•'],
@@ -112,8 +110,8 @@ class RelayoutTC(unittest.TestCase):
                 [['I']],
                 [['Electricité']],
                 [
-                    ['Prochaine facture vers',
-                     'le 01/09/2018 (sauf résiliation intervenue entre temps)'],
+                    ['Prochaine facture vers le 01/09/2018 (sauf résiliation '
+                     'intervenue entre temps)'],
                 ],
             ]
         )

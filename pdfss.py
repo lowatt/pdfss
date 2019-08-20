@@ -351,7 +351,12 @@ class Line:
 
     def append(self, ltchar):
         index = bisect(self._group_index, ltchar.x1)
-        width = ltchar.width or 4  # some chars (picto) have width = 0
+        # some chars (picto) have width = 0, set to 4 arbitrarily it's still
+        # better than 0
+        width = (ltchar.width or 4)
+        if ltchar.add_space_left:
+            width += (ltchar.width or 4)
+
         if index > 0 \
            and abs(ltchar.x0 - self._group_index[index - 1]) < width:
             group = self.groups[index - 1]
