@@ -34,6 +34,91 @@ class PDF2TextTC(unittest.TestCase):
         )
 
 
+class RelayoutTC(unittest.TestCase):
+    maxDiff = None
+
+    def test(self):
+        filepath = datafile('edf_c1_10080595767_p1.py')
+        with open(filepath) as stream:
+            p1 = read_py(stream.read())['page1']
+
+        # set min_x to 12 to drop vertical text in the page left margin
+        result = []
+        for group in pdfss.relayout(p1, min_x=12):
+            group_result = []
+            result.append(group_result)
+
+            for line in group:
+                group_result.append([text_group.text
+                                     for text_group in line.groups])
+
+        self.assertEqual(
+            result,
+            [
+                [['1 / 14']],
+                [['x']],
+                [['a']],
+                [['d', 'b']],
+                [
+                    ['Vos contacts'],
+                    ['Votre interlocuteur EDF'],
+                    ['RC Grandes - Entreprises et Collectivités'],
+                    ['Par courrier'],
+                    ['Direction Commerciale Régionale'],
+                    ['TSA 70102'],
+                    ['33070 BORDEAUX CEDEX'],
+                    ['Par internet'],
+                    ['e-mail : edfentreprises-sud-ouest-31@edf.fr'],
+                    ['www.edfentreprises.fr'],
+                    ['Par téléphone'],
+                    ['Du lundi au vendredi de 8h à 18h'],
+                    ['Urgence'],
+                    ['N° de tél. dépannage : voir', 'le détail de facturation'],
+                    ['par site'],
+                    ['Vos informations client'],
+                    ['Vos références'],
+                    ['Compte de facturation : 520861'],
+                    ['Compte commercial : 1-37XU'],
+                ],
+                [
+                    ['FLX22390212900027-07RS'],
+                    ['NOTRE', 'CLIENT'],
+                    ['42', 'RUE', 'DU', 'GRAS'],
+                    ['31560', 'NAILLOUX'],
+                ],
+                [['COPIE']],
+                [['Service 0,05 €', '/min'], ['+ prix appel']],
+                [['0 812 041 533']],
+                [
+                    ['Facture du 01/08/2018'],
+                    ['n° 1008059'],
+                    ['Montant Hors TVA', '-1 882,35 €'],
+                    ['Montant TVA (payée sur', 'les débits)', '-386,88 €'],
+                    ['Facture TTC', '-2 269,23 €'],
+                    ['Montant total (TTC)', '-2 269,23 €'],
+                    ['Compte tenu de', 'la situation de votre compte, '
+                     'un montant de 2 269,23 €'],
+                    ['en votre faveur vous sera remboursé sous 15', 'jours.'],
+                    ['A défaut de paiement à la date prévue,',
+                     'le montant TTC dû sera majoré de pénalités pour retard '
+                     'au taux'],
+                    ["annuel de 10,00 % et d'une",
+                     'indemnité pour frais de recouvrement par facture de '
+                     '40,00 €',
+                     '.'],
+                    ['Les prochaines étapes'],
+                    ['•'],
+                ],
+                [['I']],
+                [['Electricité']],
+                [
+                    ['Prochaine facture vers',
+                     'le 01/09/2018 (sauf résiliation intervenue entre temps)'],
+                ],
+            ]
+        )
+
+
 class DumpPDFStructureTC(unittest.TestCase):
 
     def test(self):

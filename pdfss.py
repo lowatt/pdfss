@@ -100,10 +100,12 @@ Dump PDF data structures
 
 from __future__ import generator_stop
 
+from bisect import bisect
 from collections import defaultdict
 from datetime import date
-from functools import update_wrapper, wraps
+from functools import partial, update_wrapper, wraps
 from io import BytesIO, TextIOWrapper
+from itertools import chain
 import logging
 import re
 import sys
@@ -112,8 +114,9 @@ from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
     LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTLine,
-    LTRect, LTText, LTTextBox, LTTextContainer, LTTextBoxHorizontal,
-    LTTextLine, LTTextLineHorizontal)
+    LTPage, LTRect, LTText, LTTextBox, LTTextContainer, LTTextBoxHorizontal,
+    LTTextLine, LTTextLineHorizontal,
+)
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 
@@ -252,6 +255,155 @@ def colon_right(line):
 
 
 # PDF data extraction API ##############################################
+
+def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
+    def iter_ltchar_index_items(items):
+        for _, ltchars in sorted(items):
+            for ltchar in ltchars:
+                yield ltchar
+
+    # 1. collect ltchar instances
+    ltline_index = defaultdict(partial(defaultdict, list))
+    latest_is_anno = False
+    for lttext in iter_text(ltobj, skip_classes):
+        if isinstance(lttext, LTAnno):
+            latest_is_anno = True
+            continue
+
+        # remember ltchar was preceeded by a LTAnno
+        lttext.add_space_left = latest_is_anno
+        latest_is_anno = False
+
+        # check ltchar is within desired page boundaries,
+        # only left margin is considered for now
+        if min_x is not None and lttext.x0 < min_x:
+            continue
+
+        key = (lttext.y0, lttext.fontname, lttext.fontsize)
+        ltchar_index = ltline_index[key]
+        ltchar_index[lttext.x0].append(lttext)
+
+    # 2. regroup some lines
+    latest = None
+    line_index = {}
+    for key, ltchar_index in reversed(sorted(ltline_index.items())):
+        y, font_name, font_size = key
+
+        if latest is not None:
+            latest_key, latest_ltchar_index = latest
+            latest_y, latest_font_name, latest_font_size = latest_key
+            assert (latest_y - y) >= 0
+
+            # merge lines if fonts are compatible and y diff is below font size
+            # diff
+            allowed_diff = max(latest_font_size, font_size) * 0.15
+            diff = abs(latest_font_size - font_size)
+            if diff < allowed_diff and (latest_y - y) < diff:
+                line = Line(font_name, font_size)
+                line_index[latest_key] = line
+                for ltchar in iter_ltchar_index_items(chain(
+                        latest_ltchar_index.items(), ltchar_index.items()
+                )):
+                    line.append(ltchar)
+                continue
+
+        line = line_index[key] = Line(font_name, font_size)
+        for ltchar in iter_ltchar_index_items(ltchar_index.items()):
+            line.append(ltchar)
+
+        latest = key, ltchar_index
+
+    # 3. search for column groups
+    groups = defaultdict(LineGroup)
+    for _, line in reversed(sorted(line_index.items())):
+        start_index = line.groups[0].x0
+        groups[start_index].append(line)
+
+    # from pprint import pprint
+    # pprint(line_index)
+    # for group in groups.values():
+    #      print(group)
+
+    return groups.values()
+
+
+class LineGroup(list):
+    pass
+
+
+class Line:
+
+    def __init__(self, font_name, font_size):
+        self.font_name = font_name
+        self.font_size = font_size
+        self.groups = []
+        self._group_index = []
+
+    def __repr__(self):
+        groups_str = []
+        for group in self.groups:
+            groups_str.append(repr(group))
+        return '[{}: {}]'.format(self.font_size, ', '.join(groups_str))
+
+    def append(self, ltchar):
+        index = bisect(self._group_index, ltchar.x1)
+        width = ltchar.width or 4  # some chars (picto) have width = 0
+        if index > 0 \
+           and abs(ltchar.x0 - self._group_index[index - 1]) < width:
+            group = self.groups[index - 1]
+            text = ltchar.get_text()
+            if ltchar.add_space_left:
+                text = ' ' + text
+            group.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)
+            self._group_index[index - 1] = ltchar.x1
+
+        else:
+            group = TextGroup(ltchar.get_text(), ltchar.x0, ltchar.x1,
+                              ltchar.fontsize)
+            self.groups.insert(index, group)
+            self._group_index.insert(index, ltchar.x1)
+
+        assert len(self.groups) == len(self._group_index)
+
+
+class TextGroup:
+
+    def __init__(self, text, x0, x1, font_size):
+        self.text = text
+        self.x0 = x0
+        self.x1 = x1
+
+    def __repr__(self):
+        return '<{!r} ({}, {})]>'.format(
+            self.text, self.x0, self.x1)
+
+    def append(self, text, x0, x1, font_size):
+        assert self.x0 <= x0, (self.x0, x0, self.text, text)
+        assert self.x1 <= x1, (self.x1, x1, self.text, text)
+        self.x1 = x1
+        self.text += text
+
+
+def compatible_font_size(font_size1, font_size2):
+    return font_size1 == font_size2
+    allowed_diff = max(font_size1, font_size2) * .1
+    return abs(font_size1 - font_size2) <= allowed_diff
+
+
+def iter_text(ltobj, skip_classes=None):
+    if skip_classes is not None and isinstance(ltobj, skip_classes):
+        return
+
+    if isinstance(ltobj, (LTPage, LTContainer)):
+        for subltobj in ltobj._objs:
+            yield from iter_text(subltobj, skip_classes)
+
+    elif isinstance(ltobj, (LTChar, LTAnno)):
+        yield ltobj
+
+    else:
+        assert False, ltobj
+
 
 def _ltobjs_generator(layout, state=None):
     """Root coroutine of the PDF parsing API, yielding `(state, ltobj)` tuple
