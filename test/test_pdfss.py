@@ -42,6 +42,20 @@ class DumpPDFStructureTC(unittest.TestCase):
         )
 
 
+class PyDumpTC(unittest.TestCase):
+
+    def test(self):
+        filepath = datafile('Lentilles.pdf')
+        out = StringIO()
+        pdfss.py_dump(filepath, out=out)
+  
+        exec_globals = {}
+        exec_locals = {}
+        exec(out.getvalue(), exec_globals, exec_locals)
+        self.assertIn('page1', exec_locals)
+        self.assertIn('page2', exec_locals)
+
+
 class fake_ltobj:
     def __init__(self, text):
         self.lower_text = text.lower()

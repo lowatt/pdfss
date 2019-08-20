@@ -70,6 +70,7 @@ Other PDF utilities
 ~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: iter_pdf_ltpages
+.. autofunction:: py_dump
 .. autofunction:: dump_pdf_structure
 .. autofunction:: pdf2text
 
@@ -105,8 +106,8 @@ import sys
 from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
-    LAParams, LTAnno, LTChar, LTCurve, LTFigure, LTImage, LTLine, LTRect,
-    LTText, LTTextBox, LTTextContainer, LTTextBoxHorizontal,
+    LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTLine,
+    LTRect, LTText, LTTextBox, LTTextContainer, LTTextBoxHorizontal,
     LTTextLine, LTTextLineHorizontal)
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -642,6 +643,96 @@ def _container_lower_text(self):
 
 
 LTTextContainer.lower_text = reify(_container_lower_text)
+
+
+# Dump PDFMiner data structure as an importable python file for testing purpose
+
+
+def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=(
+        LTCurve, LTFigure, LTImage, LTLine, LTRect,
+)):
+    """Dump PDF `filepath` file as an importable python structure in `out` stream.
+
+    :param filepath: path to the PDF file.
+
+    :param out: optional output file stream, default to sys.stdout.
+
+    :param pages: optional list of page numbers to dump (starting by 1).
+
+    :param skip_classes: tuple of PDFMiner layout classes that shoult not be
+      dumped.
+
+    """
+    print('from pdfminer.layout import *', file=out)
+    print('from pdfss import ltobj\n\n', file=out)
+
+    with open(filepath, 'rb') as input_stream:
+        for i, page in enumerate(iter_pdf_ltpages(input_stream, pages=pages)):
+            print('\npage{} = '.format(i+1), file=out, end='')
+            py_dump_ltobj(page, out=out, skip_classes=skip_classes)
+
+
+def py_dump_ltobj(ltobj, out=sys.stdout, skip_classes=None, indent=0):
+    """Dump PDFMiner `ltobj` object as an importable python structure in `out`
+    stream.
+
+    :param ltobj: PDFMiner LT object to dump.
+
+    :param out: optional output file stream, default to sys.stdout.
+
+    :param skip_classes: tuple of PDFMiner layout classes that shoult not be
+      dumped.
+
+    :param indent: indentation level of the object, default to 0.
+
+    """
+    if skip_classes is not None and isinstance(ltobj, skip_classes):
+        return
+
+    if isinstance(ltobj, LTContainer):
+        # if type(b) in [LTTextBox, LTTextBoxHorizontal,
+        #                LTTextLine, LTTextLineHorizontal]:
+        print('{}ltobj({}, {}, ['.format('  ' * indent,
+                                         ltobj.__class__.__name__,
+                                         _clean_ltobj_dict(ltobj.__dict__)),
+              file=out)
+        for subltobj in ltobj._objs:
+            py_dump_ltobj(subltobj, out, skip_classes, indent + 1)
+        print('{}]),'.format('  ' * indent),
+              file=out)
+
+    else:
+        print('{}ltobj({}, {}),'.format('  ' * indent,
+                                        ltobj.__class__.__name__,
+                                        _clean_ltobj_dict(ltobj.__dict__)),
+              file=out)
+
+
+class ltobj:
+    """Class used to reimport object dumped by :func:`py_dump`.
+
+    **You should not use this directly**.
+    """
+    def __init__(self, __class__, __dict__, objs=None):
+        self.__class__ = __class__
+        self.__dict__ = __dict__
+        if objs is not None:
+            self._objs = objs
+
+
+def _clean_ltobj_dict(__dict__):
+    """Return a dictionary from an ltobj's __dict__, removing entries that should
+    not be exported and rounding float for better readability.
+    """
+    def round_value(v):
+        if isinstance(v, float):
+            return round(v, 2)
+        if isinstance(v, tuple):
+            return tuple(round_value(item) for item in v)
+        return v
+
+    return {k: round_value(v) for k, v in __dict__.items()
+            if k not in {'_objs', 'graphicstate', 'groups', 'ncs'}}
 
 
 if __name__ == '__main__':
