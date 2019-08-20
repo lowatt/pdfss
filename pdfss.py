@@ -283,7 +283,8 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         ltchar_index = ltline_index[key]
         ltchar_index[lttext.x0].append(lttext)
 
-    # 2. regroup some lines
+    # 2. regroup lines which may be out of sync because of different font size
+    # (eg. bold vs standard font)
     latest = None
     line_index = {}
     for key, ltchar_index in reversed(sorted(ltline_index.items())):
@@ -336,8 +337,11 @@ class Line:
     def __init__(self, font_name, font_size):
         self.font_name = font_name
         self.font_size = font_size
-        self.groups = []
+        # ordered list of ltchar.x0, use index to get matching ltline from
+        # :attr:`groups`
         self._group_index = []
+        # slave list of group
+        self.groups = []
 
     def __repr__(self):
         groups_str = []
