@@ -120,6 +120,10 @@ from pdfminer.pdfpage import PDFPage
 
 LOGGER = logging.getLogger('lowatt.pdfss')
 
+DEFAULT_SKIP_CLASSES = (
+    LTCurve, LTFigure, LTImage, LTLine, LTRect,
+)
+
 
 # High-level functions #################################################
 
@@ -658,9 +662,8 @@ def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
                     print(prefix, b, file=file)
 
 
-def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=(
-        LTCurve, LTFigure, LTImage, LTLine, LTRect,
-)):
+def py_dump(filepath, out=sys.stdout, pages=None,
+            skip_classes=DEFAULT_SKIP_CLASSES):
     """Dump PDF `filepath` file as an importable python structure in `out` stream.
 
     :param filepath: path to the PDF file.
