@@ -709,7 +709,7 @@ def py_dump_ltobj(ltobj, out=sys.stdout, skip_classes=None, indent=0):
               file=out)
         for subltobj in ltobj._objs:
             py_dump_ltobj(subltobj, out, skip_classes, indent + 1)
-        print('{}]),'.format('  ' * indent),
+        print('{}]){}'.format('  ' * indent, ',' if indent else ''),
               file=out)
 
     else:
