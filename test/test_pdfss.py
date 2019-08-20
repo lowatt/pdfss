@@ -13,6 +13,13 @@ def datafile(*filename):
     return join(HERE, 'data', *filename)
 
 
+def read_py(code):
+    exec_globals = {}
+    exec_locals = {}
+    exec(code, exec_globals, exec_locals)
+    return exec_locals
+
+
 class PDF2TextTC(unittest.TestCase):
 
     def test(self):
@@ -48,10 +55,8 @@ class PyDumpTC(unittest.TestCase):
         filepath = datafile('Lentilles.pdf')
         out = StringIO()
         pdfss.py_dump(filepath, out=out)
-  
-        exec_globals = {}
-        exec_locals = {}
-        exec(out.getvalue(), exec_globals, exec_locals)
+
+        exec_locals = read_py(out.getvalue())
         self.assertIn('page1', exec_locals)
         self.assertIn('page2', exec_locals)
 
