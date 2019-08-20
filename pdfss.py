@@ -700,8 +700,6 @@ def py_dump_ltobj(ltobj, out=sys.stdout, skip_classes=None, indent=0):
         return
 
     if isinstance(ltobj, LTContainer):
-        # if type(b) in [LTTextBox, LTTextBoxHorizontal,
-        #                LTTextLine, LTTextLineHorizontal]:
         print('{}ltobj({}, {}, ['.format('  ' * indent,
                                          ltobj.__class__.__name__,
                                          _clean_ltobj_dict(ltobj.__dict__)),
