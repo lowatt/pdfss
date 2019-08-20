@@ -6,6 +6,31 @@ Provides generic helpers to extract information from pdf/text files.
 
 All PDF manipulation is based on the underlying PDFMiner_ library.
 
+High-level functions
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: iter_pdf_ltpages
+.. autofunction:: pdf2text
+
+Low-level text manipulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "c\\_\\*" functions family are *converters* turning a string into something
+else. First part of the name describes the accepted string, second part the
+returned type or types. For instance :func:`c_amount_float_unit` convert a
+string like `"345 €"` into a float (`345.`) and a unit (`'€'`).
+
+.. autofunction:: c_amount_float
+.. autofunction:: c_amount_float_unit
+.. autofunction:: c_dmy_date
+.. autofunction:: c_percent_float
+.. autofunction:: c_str_period
+.. autofunction:: c_str_float
+.. autofunction:: c_str_float_unit
+.. autofunction:: last_word
+.. autofunction:: colon_right
+
+
 PDF data extraction API
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -66,31 +91,11 @@ Once you get the idea:
 .. autofunction:: base_recursion_control_processor
 .. autofunction:: debug_processor
 
-Other PDF utilities
-~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: iter_pdf_ltpages
+Dump PDF data structures
+~~~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: py_dump
 .. autofunction:: dump_pdf_structure
-.. autofunction:: pdf2text
-
-Text manipulation
-~~~~~~~~~~~~~~~~~
-
-The "c\\_\\*" functions family are *converters* turning a string into something
-else. First part of the name describes the accepted string, second part the
-returned type or types. For instance :func:`c_amount_float_unit` convert a
-string like `"345 €"` into a float (`345.`) and a unit (`'€'`).
-
-.. autofunction:: c_amount_float
-.. autofunction:: c_amount_float_unit
-.. autofunction:: c_dmy_date
-.. autofunction:: c_percent_float
-.. autofunction:: c_str_period
-.. autofunction:: c_str_float
-.. autofunction:: c_str_float_unit
-.. autofunction:: last_word
-.. autofunction:: colon_right
 """  # noqa
 
 from __future__ import generator_stop
@@ -115,6 +120,36 @@ from pdfminer.pdfpage import PDFPage
 
 LOGGER = logging.getLogger('lowatt.pdfss')
 
+
+# High-level functions #################################################
+
+def pdf2text(stream):
+    """Return a text stream from a PDF stream."""
+    bytes_stream = BytesIO()
+    extract_text_to_fp(stream, bytes_stream, laparams=LAParams())
+    bytes_stream.seek(0)
+    return TextIOWrapper(bytes_stream, 'utf-8')
+
+
+def iter_pdf_ltpages(stream, pages=None):
+    """Return a generator on :class:!`pdfminer.layout.LTPage` of each page in the
+    given PDF `stream`.
+
+    If `pages` is given, it should be a list of page numbers to yield (starting
+    by 1).
+    """
+    rsrcmgr = PDFResourceManager(caching=True)
+    laparams = LAParams()
+    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+
+    for n, pdfpage in enumerate(PDFPage.get_pages(stream)):
+        if pages is None or (n+1) in pages:
+            interpreter.process_page(pdfpage)
+            yield device.get_result()
+
+
+# Low-level text manipulation ##########################################
 
 def c_dmy_date(date_string):
     """Return a date formatted as string like 22/04/2018 to a class:`datetime.date`
@@ -212,54 +247,7 @@ def colon_right(line):
     return line.split(':')[-1].strip()
 
 
-def pdf2text(stream):
-    """Return a text stream from a PDF stream."""
-    bytes_stream = BytesIO()
-    extract_text_to_fp(stream, bytes_stream, laparams=LAParams())
-    bytes_stream.seek(0)
-    return TextIOWrapper(bytes_stream, 'utf-8')
-
-
-def iter_pdf_ltpages(stream, pages=None):
-    """Return a generator on :class:!`pdfminer.layout.LTPage` of each page in the
-    given PDF `stream`.
-
-    If `pages` is given, it should be a list of page numbers to yield (starting
-    by 1).
-    """
-    rsrcmgr = PDFResourceManager(caching=True)
-    laparams = LAParams()
-    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-    interpreter = PDFPageInterpreter(rsrcmgr, device)
-
-    for n, pdfpage in enumerate(PDFPage.get_pages(stream)):
-        if pages is None or (n+1) in pages:
-            interpreter.process_page(pdfpage)
-            yield device.get_result()
-
-
-def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
-    """Print PDFMiner's structure extracted from the given PDF file, to help
-    debugging or building scrapers.
-
-    If `pages` is given, it should be a list of page numbers to yield (starting
-    by 1).
-
-    Print by default on stdout but you may give an alternate `file` stream into
-    which data will be written.
-    """
-    with open(filepath, 'rb') as stream:
-        for i, page in enumerate(iter_pdf_ltpages(stream, pages=pages)):
-            print('{} page {}'.format('*'*80, i+1))
-            objstack = [('', o) for o in reversed(page._objs)]
-            while objstack:
-                prefix, b = objstack.pop()
-                if type(b) in [LTTextBox, LTTextLine, LTTextBoxHorizontal]:
-                    print(prefix, b, file=file)
-                    objstack += ((prefix + '  ', o) for o in reversed(b._objs))
-                else:
-                    print(prefix, b, file=file)
-
+# PDF data extraction API ##############################################
 
 def _ltobjs_generator(layout, state=None):
     """Root coroutine of the PDF parsing API, yielding `(state, ltobj)` tuple
@@ -645,7 +633,29 @@ def _container_lower_text(self):
 LTTextContainer.lower_text = reify(_container_lower_text)
 
 
-# Dump PDFMiner data structure as an importable python file for testing purpose
+# Dump PDF data structures #############################################
+
+def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
+    """Print PDFMiner's structure extracted from the given PDF file, to help
+    debugging or building scrapers.
+
+    If `pages` is given, it should be a list of page numbers to yield (starting
+    by 1).
+
+    Print by default on stdout but you may give an alternate `file` stream into
+    which data will be written.
+    """
+    with open(filepath, 'rb') as stream:
+        for i, page in enumerate(iter_pdf_ltpages(stream, pages=pages)):
+            print('{} page {}'.format('*'*80, i+1))
+            objstack = [('', o) for o in reversed(page._objs)]
+            while objstack:
+                prefix, b = objstack.pop()
+                if type(b) in [LTTextBox, LTTextLine, LTTextBoxHorizontal]:
+                    print(prefix, b, file=file)
+                    objstack += ((prefix + '  ', o) for o in reversed(b._objs))
+                else:
+                    print(prefix, b, file=file)
 
 
 def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=(
@@ -734,6 +744,8 @@ def _clean_ltobj_dict(__dict__):
     return {k: round_value(v) for k, v in __dict__.items()
             if k not in {'_objs', 'graphicstate', 'groups', 'ncs'}}
 
+
+########################################################################
 
 if __name__ == '__main__':
     if len(sys.argv) >= 3:
