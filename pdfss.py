@@ -353,9 +353,14 @@ class Line:
         index = bisect(self._group_index, ltchar.x1)
         # some chars (picto) have width = 0, set to 4 arbitrarily it's still
         # better than 0
-        width = (ltchar.width or 4)
+        if ltchar.width:
+            width = max(ltchar.width, ltchar.fontsize / 2)
+        else:
+            assert ltchar.fontsize
+            width = ltchar.fontsize
+
         if ltchar.add_space_left:
-            width += (ltchar.width or 4)
+            width *= 2
 
         if index > 0 \
            and abs(ltchar.x0 - self._group_index[index - 1]) < width:

@@ -58,7 +58,7 @@ class RelayoutTC(unittest.TestCase):
                 [['1 / 14']],
                 [['x']],
                 [['a']],
-                [['d', 'b']],
+                [['db']],
                 [
                     ['Vos contacts'],
                     ['Votre interlocuteur EDF'],
@@ -87,7 +87,7 @@ class RelayoutTC(unittest.TestCase):
                     ['31560 NAILLOUX'],
                 ],
                 [['COPIE']],
-                [['Service 0,05 €', '/min'], ['+ prix appel']],
+                [['Service 0,05 € /min'], ['+ prix appel']],
                 [['0 812 041 533']],
                 [
                     ['Facture du 01/08/2018'],
@@ -102,8 +102,7 @@ class RelayoutTC(unittest.TestCase):
                     ['A défaut de paiement à la date prévue, le montant TTC '
                      'dû sera majoré de pénalités pour retard au taux'],
                     ["annuel de 10,00 % et d'une indemnité pour frais de "
-                     'recouvrement par facture de 40,00 €',
-                     '.'],
+                     'recouvrement par facture de 40,00 € .'],
                     ['Les prochaines étapes'],
                     ['•'],
                 ],
