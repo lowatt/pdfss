@@ -729,6 +729,9 @@ class ltobj:
         self.__dict__ = __dict__
         if objs is not None:
             self._objs = objs
+        if 'x0' in __dict__:
+            # bbox necessary for repr() but not exported
+            self.bbox = (self.x0, self.y0, self.x1, self.y1)
 
 
 def _clean_ltobj_dict(__dict__):
@@ -743,7 +746,7 @@ def _clean_ltobj_dict(__dict__):
         return v
 
     return {k: round_value(v) for k, v in __dict__.items()
-            if k not in {'_objs', 'graphicstate', 'groups', 'ncs'}}
+            if k not in {'_objs', 'bbox', 'graphicstate', 'groups', 'ncs'}}
 
 
 ########################################################################
