@@ -55,7 +55,7 @@ def _relayout(filename):
 class RelayoutTC(unittest.TestCase):
     maxDiff = None
 
-    def test(self):
+    def test_1(self):
         result = _relayout('edf_c1_10080595767_p1.py')
 
         self.assertEqual(
@@ -115,6 +115,81 @@ class RelayoutTC(unittest.TestCase):
                 ],
                 [['I']],
                 [['Electricité']],
+            ]
+        )
+
+    def test_2(self):
+        result = _relayout('edf_c2_10073292263_p30.py')
+
+        self.assertEqual(
+            result,
+            [
+                [['30 / 30']],
+                [
+                    ['USINE TRAITEMENT'],
+                    ['Détail de votre facture du 26/02/2018 n° 1007329'],
+                    ['Données contrat', 'Données Point de Livraison'],
+                    ['Contrat Electricité Structuré',
+                     '98 AVENUE BAVEU LIMAS 75014 PARIS'],
+                    ['Réf. de votre contrat 1-1Y9P',
+                     'Info. site personnalisée : 3795-SIP_EL_13'],
+                    ['Prix non réglementés'],
+                    ['Venant à échéance le 31/12/2017'],
+                    ['Groupe de sites : C2 5P-SDT'],
+                ],
+                [
+                    ['COPIE'],
+                ],
+                [
+                    ['Données de comptage',
+                     'Puissance(s) souscrite(s) (kW ou kVA)'],
+                    ['Identifiant de comptage : 021539000000 Type de compteur '
+                     ': Compteur HTA SAPHIR',
+                     'Operateur Heures de pointe', '585'],
+                    ['Pertes Joule : 1,000',
+                     'Opérateur Heures pleines hiver', '585'],
+                    ['Acheminement : Tarif HTA5 à Pointe Fixe '
+                     'Longue Utilisation',
+                     'Opérateur Heures creuses hiver',
+                     '585'],
+                    ['Puissance souscrite actuelle (kW ou kVA) : 585',
+                     'Opérateur Heures pleines été', '585'],
+                    ['Changement de saison tarifaire: été du 01/04 au 31/10 '
+                     'et hiver du 01/11 au 31/03',
+                     'Opérateur Heures creuses été',
+                     '585'],
+                ],
+                [
+                    ['Index (relevés / estimés)',
+                     'index de début',
+                     'index de fin',
+                     'Puissances atteintes (kW ou kVA)'],
+                    ['Pointe',
+                     '0 le 01/12/2017',
+                     '14650 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Pointe',
+                     '171'],
+                    ['Heures Pleines Hiver',
+                     '54895 le 01/12/2017',
+                     '98439 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Pleines Hiver',
+                     '170'],
+                    ['Heures Creuses Hiver',
+                     '39319 le 01/12/2017',
+                     '84370 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Creuses Hiver',
+                     '170'],
+                    ['Heures Pleines Eté',
+                     '183028 le 01/12/2017',
+                     '183028 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Pleines Eté',
+                     '0'],
+                    ['Heures Creuses Eté',
+                     '136815 le 01/12/2017',
+                     '136815 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Creuses Eté',
+                     '0'],
+                ],
             ]
         )
 
