@@ -105,7 +105,6 @@ from collections import defaultdict
 from datetime import date
 from functools import partial, update_wrapper, wraps
 from io import BytesIO, TextIOWrapper
-from itertools import chain
 import logging
 import re
 import sys
@@ -286,7 +285,6 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     # Regroup lines which may be out of sync because of different font size
     # (eg. bold vs standard font)
     latest = None
-    line_index = {}
     for key, ltchar_index in reversed(sorted(ltline_index.items())):
         y, font_name, font_size = key
 
@@ -300,23 +298,24 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
             allowed_diff = max(latest_font_size, font_size) * 0.15
             diff = abs(latest_font_size - font_size)
             if diff < allowed_diff and (latest_y - y) < diff:
-                line = Line(font_name, font_size)
-                line_index[latest_key] = line
-                for ltchar in iter_ltchar_index_items(chain(
-                        latest_ltchar_index.items(), ltchar_index.items()
-                )):
-                    line.append(ltchar)
-                continue
 
-        line = line_index[key] = Line(font_name, font_size)
-        for ltchar in iter_ltchar_index_items(ltchar_index.items()):
-            line.append(ltchar)
+                ltchar_index.update(latest_ltchar_index)
+                ltline_index.pop(latest_key)
 
         latest = key, ltchar_index
 
+    # Turn ltline_index into index of Line / TextGroup objects
+    lines = []
+    for _, ltchar_index in reversed(sorted(ltline_index.items())):
+        line = Line(font_name, font_size)
+        lines.append(line)
+
+        for ltchar in iter_ltchar_index_items(ltchar_index.items()):
+            line.append(ltchar)
+
     # Search for column groups
     group_index = defaultdict(LineGroup)
-    for _, line in reversed(sorted(line_index.items())):
+    for line in lines:
         start_index = line.groups[0].x0
         group_index[start_index].append(line)
 
