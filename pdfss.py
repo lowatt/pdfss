@@ -319,11 +319,6 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         start_index = line.groups[0].x0
         group_index[start_index].append(line)
 
-    # from pprint import pprint
-    # pprint(line_index)
-    # for group in groups.values():
-    #      print(group)
-
     return group_index.values()
 
 
