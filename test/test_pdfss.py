@@ -34,23 +34,29 @@ class PDF2TextTC(unittest.TestCase):
         )
 
 
+def _relayout(filename):
+    filepath = datafile(filename)
+    with open(filepath) as stream:
+        p1 = read_py(stream.read())['page1']
+
+    # set min_x to 12 to drop vertical text in the page left margin
+    result = []
+    for group in pdfss.relayout(p1, min_x=12):
+        group_result = []
+        result.append(group_result)
+
+        for line in group:
+            group_result.append([text_group.text
+                                 for text_group in line.groups])
+
+    return result
+
+
 class RelayoutTC(unittest.TestCase):
     maxDiff = None
 
     def test(self):
-        filepath = datafile('edf_c1_10080595767_p1.py')
-        with open(filepath) as stream:
-            p1 = read_py(stream.read())['page1']
-
-        # set min_x to 12 to drop vertical text in the page left margin
-        result = []
-        for group in pdfss.relayout(p1, min_x=12):
-            group_result = []
-            result.append(group_result)
-
-            for line in group:
-                group_result.append([text_group.text
-                                     for text_group in line.groups])
+        result = _relayout('edf_c1_10080595767_p1.py')
 
         self.assertEqual(
             result,
