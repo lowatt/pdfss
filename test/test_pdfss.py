@@ -64,7 +64,7 @@ class RelayoutTC(unittest.TestCase):
                 [['1 / 14']],
                 [['x']],
                 [['a']],
-                [['db']],
+                [['d', 'b']],
                 [
                     ['Vos contacts'],
                     ['Votre interlocuteur EDF'],

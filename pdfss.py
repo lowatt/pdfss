@@ -373,17 +373,19 @@ class Line:
         return '[{}: {}]'.format(self.font_size, ', '.join(groups_str))
 
     def append(self, ltchar):
-        index = bisect(self._group_index, ltchar.x1)
-        # some chars (picto) have width = 0, set to 4 arbitrarily it's still
-        # better than 0
-        if ltchar.width:
-            width = max(ltchar.width, ltchar.fontsize / 2)
-        else:
+        if ltchar.width == 0:
+            # some chars (picto) have width = 0, set it relative to font size
+            # arbitrarily, it's still better than 0. 4 division factor was found
+            # empirically.
             assert ltchar.fontsize
-            width = ltchar.fontsize
+            ltchar.width = ltchar.fontsize / 4
+            ltchar.x1 = ltchar.x0 + ltchar.width
 
+        width = ltchar.width
         if ltchar.add_space_left:
             width *= 2
+
+        index = bisect(self._group_index, ltchar.x1)
 
         if index > 0 \
            and abs(ltchar.x0 - self._group_index[index - 1]) < width:
