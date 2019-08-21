@@ -262,7 +262,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
             for ltchar in ltchars:
                 yield ltchar
 
-    # 1. collect ltchar instances
+    # Collect ltchar instances
     ltline_index = defaultdict(partial(defaultdict, list))
     latest_is_anno = False
     for lttext in iter_text(ltobj, skip_classes):
@@ -283,7 +283,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         ltchar_index = ltline_index[key]
         ltchar_index[lttext.x0].append(lttext)
 
-    # 2. regroup lines which may be out of sync because of different font size
+    # Regroup lines which may be out of sync because of different font size
     # (eg. bold vs standard font)
     latest = None
     line_index = {}
@@ -314,7 +314,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
 
         latest = key, ltchar_index
 
-    # 3. search for column groups
+    # Search for column groups
     groups = defaultdict(LineGroup)
     for _, line in reversed(sorted(line_index.items())):
         start_index = line.groups[0].x0
