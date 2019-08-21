@@ -278,7 +278,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         if min_x is not None and lttext.x0 < min_x:
             continue
 
-        key = (lttext.y0, lttext.fontname, lttext.fontsize)
+        key = (lttext.y0, lttext.fontname.lower(), lttext.fontsize)
         ltchar_index = ltline_index[key]
         ltchar_index[lttext.x0].append(lttext)
 
@@ -297,8 +297,16 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
             # diff
             allowed_diff = max(latest_font_size, font_size) * 0.15
             diff = abs(latest_font_size - font_size)
-            if diff < allowed_diff and (latest_y - y) < diff:
+            if ((font_name.endswith('-bold')
+                 and not latest_font_name.endswith('-bold'))
+                or
+                (latest_font_name.endswith('-bold')
+                 and not font_name.endswith('-bold'))):
+                allowed_y_diff = diff * 1.5
+            else:
+                allowed_y_diff = diff
 
+            if diff < allowed_diff and (latest_y - y) <= allowed_y_diff:
                 ltchar_index.update(latest_ltchar_index)
                 ltline_index.pop(latest_key)
 

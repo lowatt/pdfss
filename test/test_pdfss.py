@@ -110,14 +110,11 @@ class RelayoutTC(unittest.TestCase):
                     ["annuel de 10,00 % et d'une indemnité pour frais de "
                      'recouvrement par facture de 40,00 € .'],
                     ['Les prochaines étapes'],
-                    ['•'],
+                    ['• Prochaine facture vers le 01/09/2018 (sauf résiliation '
+                     'intervenue entre temps)'],
                 ],
                 [['I']],
                 [['Electricité']],
-                [
-                    ['Prochaine facture vers le 01/09/2018 (sauf résiliation '
-                     'intervenue entre temps)'],
-                ],
             ]
         )
 
