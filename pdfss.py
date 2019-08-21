@@ -305,6 +305,8 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
                 allowed_y_diff = diff * 1.5
             else:
                 allowed_y_diff = diff
+            # take care allowed_y_diff may be 0, 1.1 found empirically
+            allowed_y_diff = max(allowed_y_diff, 1.1)
 
             if diff < allowed_diff and (latest_y - y) <= allowed_y_diff:
                 ltchar_index.update(latest_ltchar_index)
