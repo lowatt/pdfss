@@ -315,17 +315,17 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         latest = key, ltchar_index
 
     # Search for column groups
-    groups = defaultdict(LineGroup)
+    group_index = defaultdict(LineGroup)
     for _, line in reversed(sorted(line_index.items())):
         start_index = line.groups[0].x0
-        groups[start_index].append(line)
+        group_index[start_index].append(line)
 
     # from pprint import pprint
     # pprint(line_index)
     # for group in groups.values():
     #      print(group)
 
-    return groups.values()
+    return group_index.values()
 
 
 class LineGroup(list):
