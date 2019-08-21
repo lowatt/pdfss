@@ -322,6 +322,27 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     return group_index.values()
 
 
+def _dump_ltchar_index(ltchar_index):
+    """Return string representation of :func:relayout ltchar_index data structure,
+    for debugging purpose.
+
+    """
+    return ''.join(ltchar.get_text()
+                   for _, ltchars in sorted(ltchar_index.items())
+                   for ltchar in ltchars)
+
+
+def _dump_ltline_index(ltline_index):
+    """Return string representation of :func:relayout ltline_index data structure,
+    for debugging purpose.
+
+    """
+    res = []
+    for key, ltchar_index in reversed(sorted(ltline_index.items())):
+        res.append('{}: {}'.format(key, _dump_ltchar_index(ltchar_index)))
+    return '\n'.join(res)
+
+
 class LineGroup(list):
     pass
 
