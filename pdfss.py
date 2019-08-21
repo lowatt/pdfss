@@ -314,7 +314,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
 
         latest = key, ltchar_index
 
-    # Turn ltline_index into index of Line / TextGroup objects
+    # Turn ltline_index into index of Line / TextBlock objects
     lines = []
     for _, ltchar_index in reversed(sorted(ltline_index.items())):
         line = Line(font_name, font_size)
@@ -324,9 +324,9 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
             line.append(ltchar)
 
     # Search for column groups
-    group_index = defaultdict(LineGroup)
+    group_index = defaultdict(LinesGroup)
     for line in lines:
-        start_index = line.groups[0].x0
+        start_index = line.blocks[0].x0
         group_index[start_index].append(line)
 
     return group_index.values()
@@ -353,26 +353,27 @@ def _dump_ltline_index(ltline_index):
     return '\n'.join(res)
 
 
-class LineGroup(list):
-    pass
+class LinesGroup(list):
+    """A list of :class:`Line` logically grouped."""
 
 
 class Line:
+    """A logical line, holding a list of text blocks."""
 
     def __init__(self, font_name, font_size):
         self.font_name = font_name
         self.font_size = font_size
         # ordered list of ltchar.x0, use index to get matching ltline from
-        # :attr:`groups`
-        self._group_index = []
-        # slave list of group
-        self.groups = []
+        # :attr:`blocks`
+        self._block_index = []
+        # slave list of block
+        self.blocks = []
 
     def __repr__(self):
-        groups_str = []
-        for group in self.groups:
-            groups_str.append(repr(group))
-        return '[{}: {}]'.format(self.font_size, ', '.join(groups_str))
+        blocks_str = []
+        for block in self.blocks:
+            blocks_str.append(repr(block))
+        return '[{}: {}]'.format(self.font_size, ', '.join(blocks_str))
 
     def append(self, ltchar):
         if ltchar.width == 0:
@@ -387,27 +388,27 @@ class Line:
         if ltchar.add_space_left:
             width *= 2
 
-        index = bisect(self._group_index, ltchar.x1)
+        index = bisect(self._block_index, ltchar.x1)
 
         if index > 0 \
-           and abs(ltchar.x0 - self._group_index[index - 1]) < width:
-            group = self.groups[index - 1]
+           and abs(ltchar.x0 - self._block_index[index - 1]) < width:
+            block = self.blocks[index - 1]
             text = ltchar.get_text()
             if ltchar.add_space_left:
                 text = ' ' + text
-            group.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)
-            self._group_index[index - 1] = ltchar.x1
-
+            block.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)
+            self._block_index[index - 1] = ltchar.x1
         else:
-            group = TextGroup(ltchar.get_text(), ltchar.x0, ltchar.x1,
+            block = TextBlock(ltchar.get_text(), ltchar.x0, ltchar.x1,
                               ltchar.fontsize)
-            self.groups.insert(index, group)
-            self._group_index.insert(index, ltchar.x1)
+            self.blocks.insert(index, block)
+            self._block_index.insert(index, ltchar.x1)
 
-        assert len(self.groups) == len(self._group_index)
+        assert len(self.blocks) == len(self._block_index)
 
 
-class TextGroup:
+class TextBlock:
+    """A logical group of words."""
 
     def __init__(self, text, x0, x1, font_size):
         self.text = text

@@ -47,7 +47,7 @@ def _relayout(filename):
 
         for line in group:
             group_result.append([text_group.text
-                                 for text_group in line.groups])
+                                 for text_group in line.blocks])
 
     return result
 
