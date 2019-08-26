@@ -412,6 +412,7 @@ class Line:
         width = ltchar.width
         if ltchar.add_space_left:
             width *= 2
+            width *= 0.9
 
         index = bisect(self._block_index, ltchar.x1)
 
