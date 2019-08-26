@@ -319,19 +319,34 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     for (y0, font_name, font_size), ltchar_index in reversed(sorted(
             ltline_index.items()
     )):
-        line = Line(font_name, font_size)
+        line = Line(font_name, font_size, y0)
         lines.append(line)
 
         for ltchar in iter_ltchar_index_items(ltchar_index.items()):
             line.append(ltchar)
 
     # Search for column groups
-    group_index = defaultdict(LinesGroup)
+    group_index = {}
     for line in lines:
         start_index = line.blocks[0].x0
-        group_index[start_index].append(line)
+        try:
+            group = group_index[start_index][-1]
+        except KeyError:
+            group = LinesGroup()
+            group_index[start_index] = [group]
+        else:
+            # create a new group if there are too much vertical spacing between
+            # the previous line and the current line
+            if (group[-1].y0 - line.y0) > (line.font_size * 2):
+                group = LinesGroup()
+                group_index[start_index].append(group)
 
-    return group_index.values()
+        group.append(line)
+
+    return list(sorted(
+        (group for groups in group_index.values() for group in groups),
+        key=lambda group: -group[0].y0
+    ))
 
 
 def _dump_ltchar_index(ltchar_index):
@@ -362,7 +377,7 @@ class LinesGroup(list):
 class Line:
     """A logical line, holding a list of text blocks."""
 
-    def __init__(self, font_name, font_size):
+    def __init__(self, font_name, font_size, y0):
         self.font_name = font_name
         self.font_size = font_size
         # ordered list of ltchar.x0, use index to get matching ltline from
@@ -370,6 +385,7 @@ class Line:
         self._block_index = []
         # slave list of block
         self.blocks = []
+        self.y0 = y0
 
     def __repr__(self):
         blocks_str = []

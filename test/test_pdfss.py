@@ -183,6 +183,100 @@ class RelayoutTC(unittest.TestCase):
         )
 
     def test_3(self):
+        result = _relayout('edf_c2_10073292263_p18.py')
+        self.assertEqual(
+            result,
+            [
+                [['18 / 30']],
+                [
+                    ['USINE DES ZONES'],
+                    ['Détail de votre facture du 26/02/2018 n° 1007329'],
+                    ['Données contrat', 'Données Point de Livraison'],
+                    ['Contrat Electricité Structuré',
+                     '9 ROUTE DE SAINT MARCELE 98765 LES AUTRE'],
+                    ['Réf. de votre contrat 1-1Y9', 'WRAPPED'],
+                    ['Prix non réglementés',
+                     'Info. site personnalisée : 3795-SIP'],
+                    ['Souscrit depuis le 13/07/2016'],
+                    ['Venant à échéance le 31/12/2017'],
+                    ['Groupe de sites : C2 5P-SDT'],
+                ],
+                [['COPIE']],
+                [
+                    ['Données de comptage',
+                     'Puissance(s) souscrite(s) (kW ou kVA)'],
+                    ['Identifiant de comptage : 021539999999 Type de '
+                     'compteur : Compteur HTA SAPHIR',
+                     'Operateur Heures de pointe',
+                     '528'],
+                    ['Pertes Joule : 1,000',
+                     'Opérateur Heures pleines hiver', '528'],
+                    ['Acheminement : Tarif HTA5 à Pointe Fixe Longue '
+                     'Utilisation',
+                     'Opérateur Heures creuses hiver',
+                     '528'],
+                    ['Puissance souscrite actuelle (kW ou kVA) : 528',
+                     'Opérateur Heures pleines été',
+                     '528'],
+                    ['Changement de saison tarifaire: été du 01/04 au 31/10 et '
+                     'hiver du 01/11 au '
+                     '31/03',
+                     'Opérateur Heures creuses été',
+                     '528'],
+                ],
+                [
+                    ['Index Acheminement (relevés/estimés)',
+                     'index de début',
+                     'index de fin',
+                     'Puissances atteintes (kW ou kVA)'],
+                    ['Pointe',
+                     '10787 le 01/12/2017',
+                     '55818 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Pointe',
+                     '519'],
+                    ['Heures Pleines Hiver',
+                     '251088 le 01/12/2017',
+                     '386186 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Pleines Hiver',
+                     '522'],
+                    ['Heures Creuses Hiver',
+                     '184001 le 01/12/2017',
+                     '323459 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Creuses Hiver',
+                     '507'],
+                    ['Heures Pleines Eté',
+                     '832841 le 01/12/2017',
+                     '832841 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Pleines Eté',
+                     '0'],
+                    ['Heures Creuses Eté',
+                     '612464 le 01/12/2017',
+                     '612464 le 31/12/2017',
+                     'du 01/12/2017 au 31/12/2017 : Heures Creuses Eté',
+                     '0'],
+                ],
+                [
+                    ['Index Fourniture (relevés / estimés)',
+                     'index de début', 'index de fin'],
+                    ['Cadran EA1 : Heures Pleines Hiver -'],
+                    ['Postes Marché'],
+                    ['Cadran EA2 : Heures Creuses Hiver'],
+                    ['- Postes Marché'],
+                    ['Cadran EA3 : Heures Pleines Eté -'],
+                    ['Postes Marché'],
+                    ['Cadran EA4 : Heures Creuses Eté -'],
+                    ['Postes Marché'],
+                ], [
+                    ['283836 le 01/12/2017', '393906 le 31/12/2017'],
+                    ['485157 le 01/12/2017', '694675 le 31/12/2017'],
+                    ['413142 le 01/12/2017', '413142 le 31/12/2017'],
+                    ['709046 le 01/12/2017', '709046 le 31/12/2017'],
+                ]
+
+            ]
+        )
+
+    def test_4(self):
         result = _relayout('edf_c2_10073292263_p30.py')
         self.assertEqual(
             result,
