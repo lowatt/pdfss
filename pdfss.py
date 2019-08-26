@@ -316,7 +316,9 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
 
     # Turn ltline_index into index of Line / TextBlock objects
     lines = []
-    for _, ltchar_index in reversed(sorted(ltline_index.items())):
+    for (y0, font_name, font_size), ltchar_index in reversed(sorted(
+            ltline_index.items()
+    )):
         line = Line(font_name, font_size)
         lines.append(line)
 
