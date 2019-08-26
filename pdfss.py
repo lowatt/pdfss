@@ -393,6 +393,13 @@ class Line:
             blocks_str.append(repr(block))
         return '[{}: {}]'.format(self.font_size, ', '.join(blocks_str))
 
+    def __str__(self):
+        blocks_str = []
+        for block in self.blocks:
+            blocks_str.append(str(block))
+
+        return '[{}]'.format(', '.join(blocks_str))
+
     def append(self, ltchar):
         if ltchar.width == 0:
             # some chars (picto) have width = 0, set it relative to font size
@@ -436,6 +443,9 @@ class TextBlock:
     def __repr__(self):
         return '<{!r} ({}, {})]>'.format(
             self.text, self.x0, self.x1)
+
+    def __str__(self):
+        return '<{!r}>'.format(self.text)
 
     def append(self, text, x0, x1, font_size):
         assert self.x0 <= x0, (self.x0, x0, self.text, text)
