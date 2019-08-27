@@ -370,6 +370,11 @@ def _line_group(line, group_index, previous_line_group):
     if (group[-1].y0 - line.y0) > (line.font_size * 2):
         group = LinesGroup()
         group_index[start_index].append(group)
+    # or if previous line overlap x coordinate
+    elif (previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
+          and previous_line_group[-1].blocks[0].x0 < line.blocks[-1].x1):
+        group = LinesGroup()
+        group_index[start_index].append(group)
 
     return group
 
