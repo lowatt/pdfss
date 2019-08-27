@@ -55,7 +55,7 @@ def _relayout(filename):
 class RelayoutTC(unittest.TestCase):
     maxDiff = None
 
-    def test_1(self):
+    def test_edf_c1_10080595767_p1(self):
         result = _relayout('edf_c1_10080595767_p1.py')
         self.assertEqual(
             result,
@@ -116,7 +116,7 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
-    def test_2(self):
+    def test_edf_c2_10073292263_p1(self):
         result = _relayout('edf_c2_10073292263_p1.py')
         self.assertEqual(
             result,
@@ -192,7 +192,7 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
-    def test_3(self):
+    def test_edf_c2_10073292263_p18(self):
         result = _relayout('edf_c2_10073292263_p18.py')
         self.assertEqual(
             result,
@@ -286,7 +286,7 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
-    def test_4(self):
+    def test_text_block_separation(self):
         result = _relayout('edf_c2_10073292263_p27.py')
         self.assertEqual(
             result,
@@ -376,7 +376,7 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
-    def test_5(self):
+    def test_edf_c2_10073292263_p30(self):
         result = _relayout('edf_c2_10073292263_p30.py')
         self.assertEqual(
             result,
