@@ -327,9 +327,11 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
 
     # Search for column groups
     group_index = {}
+    previous_line_group = None
     for line in lines:
-        group = _line_group(line, group_index)
+        group = _line_group(line, group_index, previous_line_group)
         group.append(line)
+        previous_line_group = group
 
     return list(sorted(
         (group for groups in group_index.values() for group in groups),
@@ -337,13 +339,25 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     ))
 
 
-def _line_group(line, group_index):
+def _line_group(line, group_index, previous_line_group):
     """Return :class:LinesGroup in which `line` should be added, given `group_index`
     (groups indexed per their x start index, i.e. {x0: [LinesGroup]}) and
     `previous_line_group` (the group in which line above the current one has
     been added).
     """
     start_index = line.blocks[0].x0
+
+    if previous_line_group is not None:
+        # search if start index is some column of the previous line
+        # XXX consider x1 on right aligned column
+        for idx, block in enumerate(previous_line_group[-1].blocks):
+            if block.x0 == start_index:
+                group = previous_line_group
+                while idx:
+                    line.insert_blank_at(0)
+                    idx -= 1
+                return group
+
     try:
         group = group_index[start_index][-1]
     except KeyError:
@@ -410,6 +424,10 @@ class Line:
             blocks_str.append(str(block))
 
         return '[{}]'.format(', '.join(blocks_str))
+
+    def insert_blank_at(self, index):
+        self.blocks.insert(0, TextBlock('', 0, 0, 0))
+        self._block_index.insert(0, 0)
 
     def append(self, ltchar):
         if ltchar.width == 0:
