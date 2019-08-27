@@ -328,25 +328,36 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     # Search for column groups
     group_index = {}
     for line in lines:
-        start_index = line.blocks[0].x0
-        try:
-            group = group_index[start_index][-1]
-        except KeyError:
-            group = LinesGroup()
-            group_index[start_index] = [group]
-        else:
-            # create a new group if there are too much vertical spacing between
-            # the previous line and the current line
-            if (group[-1].y0 - line.y0) > (line.font_size * 2):
-                group = LinesGroup()
-                group_index[start_index].append(group)
-
+        group = _line_group(line, group_index)
         group.append(line)
 
     return list(sorted(
         (group for groups in group_index.values() for group in groups),
         key=lambda group: -group[0].y0
     ))
+
+
+def _line_group(line, group_index):
+    """Return :class:LinesGroup in which `line` should be added, given `group_index`
+    (groups indexed per their x start index, i.e. {x0: [LinesGroup]}) and
+    `previous_line_group` (the group in which line above the current one has
+    been added).
+    """
+    start_index = line.blocks[0].x0
+    try:
+        group = group_index[start_index][-1]
+    except KeyError:
+        group = LinesGroup()
+        group_index[start_index] = [group]
+        return group
+
+    # create a new group if there are too much vertical spacing
+    # between the previous line and the current line
+    if (group[-1].y0 - line.y0) > (line.font_size * 2):
+        group = LinesGroup()
+        group_index[start_index].append(group)
+
+    return group
 
 
 def _dump_ltchar_index(ltchar_index):
