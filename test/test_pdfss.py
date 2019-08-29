@@ -103,14 +103,14 @@ class RelayoutTC(unittest.TestCase):
                      'Fév 18'],
                 ],
                 [
-                    ['Total EDF Electricité', '1 336,27 € HT'],
+                    ['Total EDF Electricité', '1 336,27 €', 'HT'],
                 ],
                 [['I']],
                 [
                     ['Abonnement électricité (HT)',
                      'Période',
                      'Prix unitaire HT',
-                     '48,38 € Taux de TVA'],
+                     '48,38 €', 'Taux de TVA'],
                     ['Abonnement',
                      'du 01/04/2018 au 30/04/2018',
                      '48,38 € /mois',
@@ -120,7 +120,7 @@ class RelayoutTC(unittest.TestCase):
                      'Période',
                      'Conso 25 426 kWh',
                      'Prix unitaire HT',
-                     '1 287,89 € Taux de TVA'],
+                     '1 287,89 €', 'Taux de TVA'],
                     ['Estimation Electricité Heures Pleines Hiver',
                      'du 01/03/2018 au 02/04/2018',
                      '14 298 kWh',
@@ -145,16 +145,17 @@ class RelayoutTC(unittest.TestCase):
                      '2,971 c€ /kWh',
                      '27,36 €',
                      '20,00 %'],
-                    ['Services', '0,00 € HT'],
+                    ['Services', '0,00 €', 'HT'],
                 ],
                 [['Assiette', 'Taux de TVA']],
                 [
                     ['E-Services (Espace client, Bilan annuel)', 'INCLUS'],
                     ["Taxes et contributions (identiques pour l'ensemble des "
                      "fournisseurs)",
-                     '653,22 € Hors TVA'],
+                     '653,22 €', 'Hors TVA'],
                 ],
-                [['Période', 'Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
+                [['Période', 'Assiette',
+                  'Prix unitaire HorsTVA', 'Taux de TVA']],
                 [
                     ["Contribution au Service Public de l'Electricité",
                      'du 01/03/2018 au 02/04/2018',
@@ -174,7 +175,7 @@ class RelayoutTC(unittest.TestCase):
                      '0,213 c€ /kWh',
                      '54,16 €',
                      '20,00 %'],
-                    ['Total Hors TVA pour ce site', '1 989,49 € Hors TVA'],
+                    ['Total Hors TVA pour ce site', '1 989,49 €', 'Hors TVA'],
                     ["TVA (identique pour l'ensemble des fournisseurs)",
                      'Assiette', '397,90 €'],
                     ['TVA à 20,00%', '1 989,49 €', '397,90 €'],
@@ -443,8 +444,8 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 # junk lost in the tested part of the page
-                [['102 323,26 € HT']],
-                [['102 323,26 € Taux de TVA']],
+                [['102 323,26 €', 'HT']],
+                [['102 323,26 €', 'Taux de TVA']],
                 [['63 775,74 €', '20,00 %'], ['35 759,59 €', '20,00 %']],
                 [['1 224,49 €', '20,00 %']],
                 [['957,37 €', '20,00 %'], ['606,07 €', '20,00 %']],
@@ -452,7 +453,7 @@ class RelayoutTC(unittest.TestCase):
                 [
                     ['Utilisation du réseau de distribution et prestations '
                      'techniques (identique pour l’ensemble des fournisseurs)',
-                     '44 678,29 € HT'],
+                     '44 678,29 €', 'HT'],
                 ],
                 [['Quantité', 'Prix unitaire HT', 'Taux de TVA']],
                 [
@@ -519,10 +520,10 @@ class RelayoutTC(unittest.TestCase):
                 [['0,00 €']],
                 [['343101kVArh (6h-22h)', '343101 kVArh']],
                 [['en franchise']],
-                [['0,00 € HT']],
+                [['0,00 €', 'HT']],
                 [['Assiette', 'Taux de TVA']],
                 [['INCLUS']],
-                [['17 217,14 € Hors TVA']],
+                [['17 217,14 €', 'Hors TVA']],
                 [['Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
                 [['2 020 246 kWh', '0,750 c€ /kWh', '15 151,85 €', '20,00 %']],
                 [['7 637,89', '27,04 %', '2 065,29 €', '20,00 %']],
@@ -776,6 +777,15 @@ class RelayoutTC(unittest.TestCase):
                      '4.35 c€ /kW',
                      '887,60'],
                 ],
+            ]
+        )
+
+    def test_euro_fix(self):
+        result = _relayout('broken_euro.py')
+        self.assertEqual(
+            result,
+            [
+                [['97.41 c€ /c.j']],
             ]
         )
 

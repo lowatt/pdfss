@@ -437,10 +437,10 @@ class Line:
     def append(self, ltchar):
         if ltchar.width == 0:
             # some chars (picto) have width = 0, set it relative to font size
-            # arbitrarily, it's still better than 0. 4 division factor was found
+            # arbitrarily, it's still better than 0. 8 division factor was found
             # empirically.
             assert ltchar.fontsize
-            ltchar.width = ltchar.fontsize / 4
+            ltchar.width = ltchar.fontsize / 8
             ltchar.x1 = ltchar.x0 + ltchar.width
 
         width = ltchar.width * 1.35
