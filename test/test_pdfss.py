@@ -94,11 +94,11 @@ class RelayoutTC(unittest.TestCase):
                 [['17418']],
                 [['15912']],
                 [
-                    ['Fév 17 Mar 17',
-                     'Avr 17 Mai 17',
+                    ['Fév 17', 'Mar 17',
+                     'Avr 17', 'Mai 17',
                      'Juin 17',
                      'Juil 17',
-                     'Aou 17 Sept 17 Oct 17 Nov 17 Déc 17',
+                     'Aou 17', 'Sept 17 Oct 17', 'Nov 17', 'Déc 17',
                      'Jan 18',
                      'Fév 18'],
                 ],
@@ -118,7 +118,8 @@ class RelayoutTC(unittest.TestCase):
                      '20,00 %'],
                     ['Consommation (HT)',
                      'Période',
-                     'Conso 25 426 kWh Prix unitaire HT',
+                     'Conso 25 426 kWh',
+                     'Prix unitaire HT',
                      '1 287,89 € Taux de TVA'],
                     ['Estimation Electricité Heures Pleines Hiver',
                      'du 01/03/2018 au 02/04/2018',
@@ -153,7 +154,7 @@ class RelayoutTC(unittest.TestCase):
                      "fournisseurs)",
                      '653,22 € Hors TVA'],
                 ],
-                [['Période', 'Assiette Prix unitaire HorsTVA', 'Taux de TVA']],
+                [['Période', 'Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
                 [
                     ["Contribution au Service Public de l'Electricité",
                      'du 01/03/2018 au 02/04/2018',
@@ -177,7 +178,7 @@ class RelayoutTC(unittest.TestCase):
                     ["TVA (identique pour l'ensemble des fournisseurs)",
                      'Assiette', '397,90 €'],
                     ['TVA à 20,00%', '1 989,49 €', '397,90 €'],
-                    ['Total TTC pour ce site', '2 387,39 € TTC'],
+                    ['Total TTC pour ce site', '2 387,39 €', 'TTC'],
                 ],
                 [['Les montants de TVA et le montant TTC par site sont fournis '
                   'à titre d’information. Seuls les montants figurant sur la '
@@ -186,8 +187,7 @@ class RelayoutTC(unittest.TestCase):
                     ['Données de comptage',
                      'Puissance(s) souscrite(s) (kW ou kVA)'],
                     ['Identifiant de comptage : 000945 Type de compteur : '
-                     'Interface Clientèle '
-                     'Emeraude',
+                     'Interface Clientèle Emeraude',
                      'Operateur Heures de pointe',
                      '100'],
                     ['Acheminement : Tarif HTA5 à Pointe Fixe Longue '
@@ -213,7 +213,7 @@ class RelayoutTC(unittest.TestCase):
             [
                 [['1 / 14']],
                 [['x']],
-                [['d', 'ba']],
+                [['dba']],
                 [
                     ['Vos contacts'],
                     ['Votre interlocuteur EDF'],
@@ -253,7 +253,7 @@ class RelayoutTC(unittest.TestCase):
                     ['Montant total (TTC)', '-2 269,23 €'],
                     ['Compte tenu de la situation de votre compte, '
                      'un montant de 2 269,23 €'],
-                    ['en votre faveur vous sera remboursé sous 15 jours.'],
+                    ['en votre faveur vous sera remboursé sous 15', 'jours.'],
                     ['A défaut de paiement à la date prévue, le montant TTC '
                      'dû sera majoré de pénalités pour retard au taux'],
                     ["annuel de 10,00 % et d'une indemnité pour frais de "
@@ -274,7 +274,7 @@ class RelayoutTC(unittest.TestCase):
             [
                 [['1 / 30']],
                 [['h']],
-                [['c', 'ba']],
+                [['cba']],
                 [
                     ['FLX05700098700057-07RI'],
                     ['Code EDI : 000000900'],
@@ -454,7 +454,7 @@ class RelayoutTC(unittest.TestCase):
                      'techniques (identique pour l’ensemble des fournisseurs)',
                      '44 678,29 € HT'],
                 ],
-                [['Quantité Prix unitaire HT', 'Taux de TVA']],
+                [['Quantité', 'Prix unitaire HT', 'Taux de TVA']],
                 [
                     ['Composante de gestion - Reprise',
                      'du 01/12/2017 au 30/12/2017',
@@ -523,7 +523,7 @@ class RelayoutTC(unittest.TestCase):
                 [['Assiette', 'Taux de TVA']],
                 [['INCLUS']],
                 [['17 217,14 € Hors TVA']],
-                [['Assiette Prix unitaire HorsTVA', 'Taux de TVA']],
+                [['Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
                 [['2 020 246 kWh', '0,750 c€ /kWh', '15 151,85 €', '20,00 %']],
                 [['7 637,89', '27,04 %', '2 065,29 €', '20,00 %']],
             ]
@@ -610,7 +610,7 @@ class RelayoutTC(unittest.TestCase):
             [
                 [['5 / 28']],
                 [['h']],
-                [['c', 'ba']],
+                [['cba']],
                 [['Vos références'],
                  ['Compte commercial : 1-2QG'],
                  ['Compte de facturation : 923422']],
@@ -632,7 +632,7 @@ class RelayoutTC(unittest.TestCase):
                      'Groupe de sites : C2 5P-SDT']],
                 [
                     ['Site : USINE',
-                     'Code site : 1311EP303802277I016'],
+                     'Code site :', '1311EP303802277I016'],
                     ['PRODUCTION', 'Groupe :', 'INDUSTRIEL'],
                     ['Réf. Acheminement Electricité : 3000221015'],
                 ],
@@ -666,8 +666,8 @@ class RelayoutTC(unittest.TestCase):
                 [['41600', '36635']],
                 [['17827']],
                 [['Sept 16 Oct 16 Nov 16 Déc 16',
-                  'Jan 17 Fév 17 Mar 17 Avr 17 Mai 17 Juin 17',
-                  'Juil 17 Aou 17 Sept 17']],
+                  'Jan 17', 'Fév 17 Mar 17', 'Avr 17 Mai 17', 'Juin 17',
+                  'Juil 17', 'Aou 17 Sept 17']],
                 [["Consommation d'après index de fin mesurés"]],
                 [['Index Acheminement relevés (en gras) ou estimés en kWh']],
                 [['Période', 'Index de début', 'Index de fin',
@@ -776,7 +776,6 @@ class RelayoutTC(unittest.TestCase):
                      '4.35 c€ /kW',
                      '887,60'],
                 ],
-
             ]
         )
 

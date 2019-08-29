@@ -443,15 +443,11 @@ class Line:
             ltchar.width = ltchar.fontsize / 4
             ltchar.x1 = ltchar.x0 + ltchar.width
 
-        width = ltchar.width
-        if ltchar.add_space_left:
-            width *= 2
-            width *= 0.9
+        width = ltchar.width * 1.35
 
         index = bisect(self._block_index, ltchar.x1)
 
-        if index > 0 \
-           and abs(ltchar.x0 - self._block_index[index - 1]) < width:
+        if index > 0 and (ltchar.x0 - self.blocks[index - 1].x1) <= width:
             block = self.blocks[index - 1]
             text = ltchar.get_text()
             if ltchar.add_space_left:
