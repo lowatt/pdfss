@@ -474,7 +474,7 @@ class Line:
             ltchar.width = ltchar.fontsize / 8
             ltchar.x1 = ltchar.x0 + ltchar.width
 
-        width = ltchar.width * 1.35
+        width = ltchar.width * 1.40
 
         index = bisect(self._block_index, ltchar.x1)
 

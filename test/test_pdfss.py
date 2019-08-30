@@ -269,7 +269,7 @@ class RelayoutTC(unittest.TestCase):
                     ['Montant total (TTC)', '-2 269,23 €'],
                     ['Compte tenu de la situation de votre compte, '
                      'un montant de 2 269,23 €'],
-                    ['en votre faveur vous sera remboursé sous 15', 'jours.'],
+                    ['en votre faveur vous sera remboursé sous 15 jours.'],
                     ['A défaut de paiement à la date prévue, le montant TTC '
                      'dû sera majoré de pénalités pour retard au taux'],
                     ["annuel de 10,00 % et d'une indemnité pour frais de "
@@ -310,12 +310,22 @@ class RelayoutTC(unittest.TestCase):
                  ['Compte tenu de la situation de votre compte,'],
                  ["vous serez prélevé d'un montant de :", '84 948,73 €'],
                  ['à partir du :', '17/02/2016'],
-                 ['sur', 'le compte :', 'FR ** ***** ***** 00000600'],
+                 ['sur le compte :', 'FR ** ***** ***** 00000600'],
                  ["Aucun escompte n'est accordé pour paiement anticipé"]],
                 [['Prochaine facture vers le 02/03/2016']],
                 [['Maintenant EDF vend du gaz naturel, contactez votre '
                   'conseiller commercial']]
 
+            ]
+        )
+
+    def test_text_merge1(self):
+        result = _relayout('text_merge1.py')
+        self.assertEqual(
+            result,
+            [
+                 [["Taxe Communale sur la Consommation Finale "
+                   "d'Electricité (TCCFE)"]]
             ]
         )
 
