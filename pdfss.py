@@ -181,7 +181,7 @@ def c_amount_float(value):
     >>> c_amount_float('4,326 c€ ')
     0.04326
     """
-    value = value.strip().replace('€', '')
+    value = value.replace('€', '').strip()
     if value[-1] == 'c':
         value = value[:-1]
         factor = 0.01
