@@ -471,10 +471,10 @@ class Line:
             # arbitrarily, it's still better than 0. 8 division factor was found
             # empirically.
             assert ltchar.fontsize
-            ltchar.width = ltchar.fontsize / 8
+            ltchar.width = ltchar.fontsize / 10
             ltchar.x1 = ltchar.x0 + ltchar.width
 
-        width = ltchar.width * 1.40
+        width = ltchar.width * 1.4
 
         index = bisect(self._block_index, ltchar.x1)
 

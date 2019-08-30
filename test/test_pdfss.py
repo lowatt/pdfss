@@ -329,6 +329,15 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
+    def test_text_merge2(self):
+        result = _relayout('text_merge2.py')
+        self.assertEqual(
+            result,
+            [
+                 [['3 993,99 €', 'Taux de TVA']],
+            ]
+        )
+
     def test_edf_c2_10073292263_p1(self):
         result = _relayout('edf_c2_10073292263_p1.py')
         self.assertEqual(
