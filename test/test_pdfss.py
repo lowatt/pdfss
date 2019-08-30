@@ -319,25 +319,6 @@ class RelayoutTC(unittest.TestCase):
             ]
         )
 
-    def test_text_merge1(self):
-        result = _relayout('text_merge1.py')
-        self.assertEqual(
-            result,
-            [
-                 [["Taxe Communale sur la Consommation Finale "
-                   "d'Electricité (TCCFE)"]]
-            ]
-        )
-
-    def test_text_merge2(self):
-        result = _relayout('text_merge2.py')
-        self.assertEqual(
-            result,
-            [
-                 [['3 993,99 €', 'Taux de TVA']],
-            ]
-        )
-
     def test_edf_c2_10073292263_p1(self):
         result = _relayout('edf_c2_10073292263_p1.py')
         self.assertEqual(
@@ -500,98 +481,6 @@ class RelayoutTC(unittest.TestCase):
                     ['709046 le 01/12/2017', '709046 le 31/12/2017'],
                 ]
 
-            ]
-        )
-
-    def test_text_block_separation(self):
-        result = _relayout('edf_c2_10073292263_p27.py')
-        self.assertEqual(
-            result,
-            [
-                # junk lost in the tested part of the page
-                [['102 323,26 €', 'HT']],
-                [['102 323,26 €', 'Taux de TVA']],
-                [['63 775,74 €', '20,00 %'], ['35 759,59 €', '20,00 %']],
-                [['1 224,49 €', '20,00 %']],
-                [['957,37 €', '20,00 %'], ['606,07 €', '20,00 %']],
-                # start desired test
-                [
-                    ['Utilisation du réseau de distribution et prestations '
-                     'techniques (identique pour l’ensemble des fournisseurs)',
-                     '44 678,29 €', 'HT'],
-                ],
-                [['Quantité', 'Prix unitaire HT', 'Taux de TVA']],
-                [
-                    ['Composante de gestion - Reprise',
-                     'du 01/12/2017 au 30/12/2017',
-                     '-16,44 €',
-                     '20,00 %'],
-                    ['Composante de gestion - Echu',
-                     'du 01/12/2017 au 31/12/2017',
-                     '31.000 c.j',
-                     '54.81 c€ /c.j',
-                     '16,99 €',
-                     '20,00 %'],
-                    ['Composante de gestion - Echoir',
-                     'du 01/01/2018 au 30/01/2018',
-                     '30.000 c.j',
-                     '97.55 c€ /c.j',
-                     '29,26 €',
-                     '20,00 %'],
-                    ['Composante de comptage - Reprise',
-                     'du 01/12/2017 au 30/12/2017',
-                     '-43,93 €',
-                     '20,00 %'],
-                    ['Composante de comptage - Echu',
-                     'du 01/12/2017 au 31/12/2017',
-                     '31.000 p.j',
-                     '146.43 c€ /p.j',
-                     '45,39 €',
-                     '20,00 %'],
-                    ['Composante de comptage - Echoir',
-                     'du 01/01/2018 au 30/01/2018',
-                     '30.000 p.j',
-                     '146.43 c€ /p.j',
-                     '43,93 €',
-                     '20,00 %'],
-                    ["Composante d'alimentation de secours cellule -",
-                     'du 01/12/2017 au 30/12/2017',
-                     '-266,03 €',
-                     '20,00 %'],
-                    ['Reprise'],
-                    ["Composante d'alimentation de secours cellule - Echu",
-                     'du 01/12/2017 au 31/12/2017',
-                     '31.000 u.j',
-                     '886.77 c€ /u.j',
-                     '274,90 €',
-                     '20,00 %'],
-                    ["Composante d'alimentation de secours cellule - Echoir",
-                     'du 01/01/2018 au 30/01/2018',
-                     '30.000 u.j',
-                     '886.77 c€ /u.j',
-                     '266,03 €',
-                     '20,00 %'],
-                ],
-                # more junk lost in the tested part of the page
-                [['-526,20 €', '20,00 %']],
-                [['149.854 km.j', '362.85 c€ /km.j', '543,74 €', '20,00 %'],
-                 ['145.020 km.j', '362.85 c€ /km.j', '526,20 €', '20,00 %']],
-                [['PS pondérée : 5000 kW', '-6 526,50 €', '20,00 %']],
-                [['155000.000 kW', '4.35 c€ /kW', '6 744,05 €', '20,00 %'],
-                 ['150000.000 kW', '4.35 c€ /kW', '6 526,50 €', '20,00 %']],
-                [['280237.000 kWh', '2.77 c€ /kWh', '7 762,56 €', '20,00 %'],
-                 ['853554.000 kWh', '2.08 c€ /kWh', '17 753,92 €', '20,00 %'],
-                 ['886455.000 kWh', '1.30 c€ /kWh', '11 523,92 €', '20,00 %']],
-                [['0,00 €']],
-                [['343101kVArh (6h-22h)', '343101 kVArh']],
-                [['en franchise']],
-                [['0,00 €', 'HT']],
-                [['Assiette', 'Taux de TVA']],
-                [['INCLUS']],
-                [['17 217,14 €', 'Hors TVA']],
-                [['Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
-                [['2 020 246 kWh', '0,750 c€ /kWh', '15 151,85 €', '20,00 %']],
-                [['7 637,89', '27,04 %', '2 065,29 €', '20,00 %']],
             ]
         )
 
@@ -837,6 +726,117 @@ class RelayoutTC(unittest.TestCase):
                      '4.35 c€ /kW',
                      '887,60'],
                 ],
+            ]
+        )
+
+    def test_text_block_separation(self):
+        result = _relayout('edf_c2_10073292263_p27.py')
+        self.assertEqual(
+            result,
+            [
+                # junk lost in the tested part of the page
+                [['102 323,26 €', 'HT']],
+                [['102 323,26 €', 'Taux de TVA']],
+                [['63 775,74 €', '20,00 %'], ['35 759,59 €', '20,00 %']],
+                [['1 224,49 €', '20,00 %']],
+                [['957,37 €', '20,00 %'], ['606,07 €', '20,00 %']],
+                # start desired test
+                [
+                    ['Utilisation du réseau de distribution et prestations '
+                     'techniques (identique pour l’ensemble des fournisseurs)',
+                     '44 678,29 €', 'HT'],
+                ],
+                [['Quantité', 'Prix unitaire HT', 'Taux de TVA']],
+                [
+                    ['Composante de gestion - Reprise',
+                     'du 01/12/2017 au 30/12/2017',
+                     '-16,44 €',
+                     '20,00 %'],
+                    ['Composante de gestion - Echu',
+                     'du 01/12/2017 au 31/12/2017',
+                     '31.000 c.j',
+                     '54.81 c€ /c.j',
+                     '16,99 €',
+                     '20,00 %'],
+                    ['Composante de gestion - Echoir',
+                     'du 01/01/2018 au 30/01/2018',
+                     '30.000 c.j',
+                     '97.55 c€ /c.j',
+                     '29,26 €',
+                     '20,00 %'],
+                    ['Composante de comptage - Reprise',
+                     'du 01/12/2017 au 30/12/2017',
+                     '-43,93 €',
+                     '20,00 %'],
+                    ['Composante de comptage - Echu',
+                     'du 01/12/2017 au 31/12/2017',
+                     '31.000 p.j',
+                     '146.43 c€ /p.j',
+                     '45,39 €',
+                     '20,00 %'],
+                    ['Composante de comptage - Echoir',
+                     'du 01/01/2018 au 30/01/2018',
+                     '30.000 p.j',
+                     '146.43 c€ /p.j',
+                     '43,93 €',
+                     '20,00 %'],
+                    ["Composante d'alimentation de secours cellule -",
+                     'du 01/12/2017 au 30/12/2017',
+                     '-266,03 €',
+                     '20,00 %'],
+                    ['Reprise'],
+                    ["Composante d'alimentation de secours cellule - Echu",
+                     'du 01/12/2017 au 31/12/2017',
+                     '31.000 u.j',
+                     '886.77 c€ /u.j',
+                     '274,90 €',
+                     '20,00 %'],
+                    ["Composante d'alimentation de secours cellule - Echoir",
+                     'du 01/01/2018 au 30/01/2018',
+                     '30.000 u.j',
+                     '886.77 c€ /u.j',
+                     '266,03 €',
+                     '20,00 %'],
+                ],
+                # more junk lost in the tested part of the page
+                [['-526,20 €', '20,00 %']],
+                [['149.854 km.j', '362.85 c€ /km.j', '543,74 €', '20,00 %'],
+                 ['145.020 km.j', '362.85 c€ /km.j', '526,20 €', '20,00 %']],
+                [['PS pondérée : 5000 kW', '-6 526,50 €', '20,00 %']],
+                [['155000.000 kW', '4.35 c€ /kW', '6 744,05 €', '20,00 %'],
+                 ['150000.000 kW', '4.35 c€ /kW', '6 526,50 €', '20,00 %']],
+                [['280237.000 kWh', '2.77 c€ /kWh', '7 762,56 €', '20,00 %'],
+                 ['853554.000 kWh', '2.08 c€ /kWh', '17 753,92 €', '20,00 %'],
+                 ['886455.000 kWh', '1.30 c€ /kWh', '11 523,92 €', '20,00 %']],
+                [['0,00 €']],
+                [['343101kVArh (6h-22h)', '343101 kVArh']],
+                [['en franchise']],
+                [['0,00 €', 'HT']],
+                [['Assiette', 'Taux de TVA']],
+                [['INCLUS']],
+                [['17 217,14 €', 'Hors TVA']],
+                [['Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
+                [['2 020 246 kWh', '0,750 c€ /kWh', '15 151,85 €', '20,00 %']],
+                [['7 637,89', '27,04 %', '2 065,29 €', '20,00 %']],
+            ]
+        )
+
+    def test_text_merge1(self):
+        result = _relayout('text_merge1.py')
+        self.assertEqual(
+            result,
+            [
+                 [["Taxe Communale sur la Consommation Finale "
+                   "d'Electricité (TCCFE)"]]
+            ]
+        )
+
+    def test_text_merge2(self):
+        result = _relayout('text_merge2.py')
+        self.assertEqual(
+            result,
+            [
+                 [['3 993,99 €', 'Taux de TVA']],
             ]
         )
 
