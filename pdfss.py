@@ -255,7 +255,21 @@ def colon_right(line):
 
 # PDF data extraction API ##############################################
 
-def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
+def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
+             ltchar_filter=None):
+    """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
+
+    :param skip_classes: tuple of PDFMiner classes that should be skipped (not
+      recursed in)
+
+    :param skip_text: set of text block that should be skipped before attempt to
+      regroup lines - this is useful when some text in the margin clutter lines
+      of desired text
+
+    :param ltchar_filter: function taking a `LTChar` instance as argument and
+      return `False` if it should not be considered, else `True`
+
+    """
     def iter_ltchar_index_items(items):
         for _, ltchars in sorted(items):
             for ltchar in ltchars:
@@ -273,9 +287,7 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
         lttext.add_space_left = latest_is_anno
         latest_is_anno = False
 
-        # check ltchar is within desired page boundaries,
-        # only left margin is considered for now
-        if min_x is not None and lttext.x0 < min_x:
+        if ltchar_filter is not None and not ltchar_filter(lttext):
             continue
 
         key = (lttext.y0, lttext.fontname.lower(), lttext.fontsize)
@@ -286,6 +298,12 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, min_x=None):
     # (eg. bold vs standard font)
     latest = None
     for key, ltchar_index in reversed(sorted(ltline_index.items())):
+
+        if skip_text is not None and \
+           _dump_ltchar_index(ltchar_index) in skip_text:
+            ltline_index.pop(key)
+            continue
+
         y, font_name, font_size = key
 
         if latest is not None:
@@ -384,9 +402,17 @@ def _dump_ltchar_index(ltchar_index):
     for debugging purpose.
 
     """
-    return ''.join(ltchar.get_text()
-                   for _, ltchars in sorted(ltchar_index.items())
-                   for ltchar in ltchars)
+    def ltchar_text(ltchar, i):
+        text = ltchar.get_text()
+        if i > 0 and ltchar.add_space_left:
+            text = ' ' + text
+        return text
+
+    return ''.join(
+        ltchar_text(ltchar, i)
+        for i, (_, ltchars) in enumerate(sorted(ltchar_index.items()))
+        for ltchar in ltchars
+    )
 
 
 def _dump_ltline_index(ltline_index):

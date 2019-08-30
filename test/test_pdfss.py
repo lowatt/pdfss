@@ -35,13 +35,37 @@ class PDF2TextTC(unittest.TestCase):
 
 
 def _relayout(filename):
+    def ltchar_filter(ltchar):
+        if ltchar.x0 < 12:
+            return False
+        if ltchar.fontname == 'PictosSIMM':
+            return False
+        if ltchar.fontsize > 100:
+            return False
+
+        return True
+
     filepath = datafile(filename)
     with open(filepath) as stream:
         p1 = read_py(stream.read())['page1']
 
     # set min_x to 12 to drop vertical text in the page left margin
     result = []
-    for group in pdfss.relayout(p1, min_x=12):
+    for group in pdfss.relayout(
+            p1, ltchar_filter=ltchar_filter,
+            skip_text={
+                "A défaut de paiement à la date prévue, le",
+                "montant TTC dû sera majoré de",
+                'pénalités pour retard au taux annuel de',
+                "10,05 % et d'une indemnité pour frais de",
+                "recouvrement par facture de 40,00 € .",
+                "Retrouvez l'ensemble de nos offres",
+                ",",
+                "des tarifs et autres informations sur la",
+                "gestion de votre énergie sur",
+                "www.edfentreprises.fr",
+            },
+    ):
         group_result = []
         result.append(group_result)
 
@@ -61,7 +85,6 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 [['5 / 20']],
-                [['h']],
                 [
                     ['BALON OVALE'],
                     ['Détail de votre facturation par site du 02/04/2018 '
@@ -81,7 +104,6 @@ class RelayoutTC(unittest.TestCase):
                 [['Service 0,05 € /appel'], ['+ prix appel']],
                 [['0 811 010 211']],
                 [['Evolution de la consommation facturée en kWh']],
-                [['COPIE']],
                 [['32071']],
                 [['31353']],
                 [['Volume de kWh'], ['( année en cours )']],
@@ -104,9 +126,6 @@ class RelayoutTC(unittest.TestCase):
                 ],
                 [
                     ['Total EDF Electricité', '1 336,27 €', 'HT'],
-                ],
-                [['I']],
-                [
                     ['Abonnement électricité (HT)',
                      'Période',
                      'Prix unitaire HT',
@@ -213,8 +232,6 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 [['1 / 14']],
-                [['x']],
-                [['dba']],
                 [
                     ['Vos contacts'],
                     ['Votre interlocuteur EDF'],
@@ -225,7 +242,6 @@ class RelayoutTC(unittest.TestCase):
                     ['33070 BORDEAUX CEDEX'],
                     ['Par internet'],
                     ['e-mail : edfentreprises-sud-ouest-31@edf.fr'],
-                    ['www.edfentreprises.fr'],
                     ['Par téléphone'],
                     ['Du lundi au vendredi de 8h à 18h'],
                     ['Urgence'],
@@ -242,7 +258,6 @@ class RelayoutTC(unittest.TestCase):
                     ['42 RUE DU GRAS'],
                     ['31560 NAILLOUX'],
                 ],
-                [['COPIE']],
                 [['Service 0,05 € /min'], ['+ prix appel']],
                 [['0 812 041 533']],
                 [
@@ -263,8 +278,44 @@ class RelayoutTC(unittest.TestCase):
                     ['• Prochaine facture vers le 01/09/2018 (sauf résiliation '
                      'intervenue entre temps)'],
                 ],
-                [['I']],
                 [['Electricité']],
+            ]
+        )
+
+    def test_edf_c1_10036338943_p1(self):
+        result = _relayout('edf_c1_10036338943_p1.py')
+        self.assertEqual(
+            result,
+            [
+                [['EDF Entreprises', '1 / 24'],
+                 ['Direction Commerciale Régionale'],
+                 ['TSA 70102'],
+                 ['33070 BORDEAUX CEDEX'],
+                 ['Relation Client Grandes Entreprises'],
+                 ['Du lundi au vendredi de 8h à 18h'],
+                 ['Téléphone : 0820 144 007'],
+                 ["Coût de l'appel pour les n° en 0820 : 0,118€ TTC/min"],
+                 ['e-mail : edfentreprises-sud-ouest-31@edf.fr'],
+                 ['N° de tél. dépannage : voir annexe site'],
+                 ['Compte commercial : 1-19O'],
+                 ['Compte de facturation : 823439']],
+                [['FLX03300054700014-07RSDO01'],
+                 ['B0NO'],
+                 ['99 RUE DU GRAS'],
+                 ['31560 NAILLOUX']],
+                [['Facture 10036339999 du 02/02/2016'],
+                 ['Montant Hors T.V.A. :', '70 790,61'],
+                 ['Total T.V.A.', '(payée sur les débits) :', '14 158,12'],
+                 ['Total TTC en euros (détails au verso) :', '84 948,73'],
+                 ['Compte tenu de la situation de votre compte,'],
+                 ["vous serez prélevé d'un montant de :", '84 948,73 €'],
+                 ['à partir du :', '17/02/2016'],
+                 ['sur', 'le compte :', 'FR ** ***** ***** 00000600'],
+                 ["Aucun escompte n'est accordé pour paiement anticipé"]],
+                [['Prochaine facture vers le 02/03/2016']],
+                [['Maintenant EDF vend du gaz naturel, contactez votre '
+                  'conseiller commercial']]
+
             ]
         )
 
@@ -274,8 +325,6 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 [['1 / 30']],
-                [['h']],
-                [['cba']],
                 [
                     ['FLX05700098700057-07RI'],
                     ['Code EDI : 000000900'],
@@ -310,7 +359,6 @@ class RelayoutTC(unittest.TestCase):
                     ['N° EJ : 270'],
                     ['CSE : 15'],
                 ],
-                [['COPIE']],
                 [['(service gratuit + prix d’appel)']],
                 [
                     ['Facture du 26/02/2018'],
@@ -332,7 +380,6 @@ class RelayoutTC(unittest.TestCase):
                     ['• Prochaine facture vers le 26/03/2018 (sauf résiliation '
                      'intervenue entre temps)'],
                 ],
-                [['I']],
                 [['Electricité']],
                 [
                     ['Paiement par Prélèvement automatique'],
@@ -363,7 +410,6 @@ class RelayoutTC(unittest.TestCase):
                     ['Venant à échéance le 31/12/2017'],
                     ['Groupe de sites : C2 5P-SDT'],
                 ],
-                [['COPIE']],
                 [
                     ['Données de comptage',
                      'Puissance(s) souscrite(s) (kW ou kVA)'],
@@ -549,9 +595,6 @@ class RelayoutTC(unittest.TestCase):
                     ['Groupe de sites : C2 5P-SDT'],
                 ],
                 [
-                    ['COPIE'],
-                ],
-                [
                     ['Données de comptage',
                      'Puissance(s) souscrite(s) (kW ou kVA)'],
                     ['Identifiant de comptage : 021539000000 Type de compteur '
@@ -610,8 +653,6 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 [['5 / 28']],
-                [['h']],
-                [['cba']],
                 [['Vos références'],
                  ['Compte commercial : 1-2QG'],
                  ['Compte de facturation : 923422']],
