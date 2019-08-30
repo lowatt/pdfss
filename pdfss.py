@@ -163,8 +163,13 @@ def c_dmy_date(date_string):
 
     >>> c_dmy_date('09/05/2018')
     datetime.date(2018, 5, 9)
+    >>> c_dmy_date('09/05/18')
+    datetime.date(2018, 5, 9)
     """
-    return date(*(int(part) for part in reversed(date_string.split('/'))))
+    parts = date_string.split('/')
+    if len(parts[-1]) == 2:
+        parts[-1] = '20' + parts[-1]
+    return date(*(int(part) for part in reversed(parts)))
 
 
 def c_amount_float(value):
