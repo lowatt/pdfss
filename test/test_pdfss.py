@@ -64,6 +64,14 @@ def _relayout(filename):
                 "des tarifs et autres informations sur la",
                 "gestion de votre énergie sur",
                 "www.edfentreprises.fr",
+
+                'TVA si',
+                'différente',
+                'ifférente',
+                'du taux',
+                'normal',
+
+                '5,50 %',
             },
     ):
         group_result = []
@@ -651,11 +659,7 @@ class RelayoutTC(unittest.TestCase):
                     ['Cadran EA4 : Heures Creuses Eté - Postes Marché',
                      '1012802 le 01/09/2017',
                      '1239685 le 30/09/2017']],
-                [['TVA si']],
-                [['différente']],
                 [['Electricité', 'Quantité', 'Prix unitaire Montant HT (€ )']],
-                [['du taux']],
-                [['normal']],
                 [
                     ['Electricité Heures Pleines Eté',
                      'du 01/09/2017 au 30/09/2017',
