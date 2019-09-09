@@ -102,6 +102,7 @@ from __future__ import generator_stop
 
 from bisect import bisect
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import date
 from functools import partial, update_wrapper, wraps
 from io import BytesIO, TextIOWrapper
@@ -260,8 +261,37 @@ def colon_right(line):
 
 # PDF data extraction API ##############################################
 
+@dataclass
+class LineInfo:
+    y0: float
+    font_name: str
+    font_size: float
+
+
+def default_group_line(linfo, latest_linfo):
+    # merge lines if fonts are compatible and y diff is below font size
+    # diff
+    allowed_diff = max(latest_linfo.font_size, linfo.font_size) * 0.15
+    diff = abs(latest_linfo.font_size - linfo.font_size)
+    if ((linfo.font_name.endswith('-bold')
+         and not latest_linfo.font_name.endswith('-bold'))
+        or
+        (latest_linfo.font_name.endswith('-bold')
+         and not linfo.font_name.endswith('-bold'))):
+        allowed_y_diff = diff * 1.5
+    else:
+        allowed_y_diff = diff
+    # take care allowed_y_diff may be 0, 1.1 found empirically
+    allowed_y_diff = max(allowed_y_diff, 1.1)
+
+    if diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
+        return True
+
+    return False
+
+
 def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
-             ltchar_filter=None):
+             ltchar_filter=None, group_line=default_group_line):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
     :param skip_classes: tuple of PDFMiner classes that should be skipped (not
@@ -309,29 +339,13 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
             ltline_index.pop(key)
             continue
 
-        y, font_name, font_size = key
-
         if latest is not None:
+            linfo = LineInfo(*key)
             latest_key, latest_ltchar_index = latest
-            latest_y, latest_font_name, latest_font_size = latest_key
-            assert (latest_y - y) >= 0
+            latest_linfo = LineInfo(*latest_key)
+            assert (latest_linfo.y0 - linfo.y0) >= 0
 
-            # merge lines if fonts are compatible and y diff is below font size
-            # diff
-            allowed_diff = max(latest_font_size, font_size) * 0.15
-            diff = abs(latest_font_size - font_size)
-            if ((font_name.endswith('-bold')
-                 and not latest_font_name.endswith('-bold'))
-                or
-                (latest_font_name.endswith('-bold')
-                 and not font_name.endswith('-bold'))):
-                allowed_y_diff = diff * 1.5
-            else:
-                allowed_y_diff = diff
-            # take care allowed_y_diff may be 0, 1.1 found empirically
-            allowed_y_diff = max(allowed_y_diff, 1.1)
-
-            if diff < allowed_diff and (latest_y - y) <= allowed_y_diff:
+            if group_line(linfo, latest_linfo):
                 ltchar_index.update(latest_ltchar_index)
                 ltline_index.pop(latest_key)
 
