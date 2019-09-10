@@ -54,7 +54,7 @@ controlled using :func:relayout arguments.
 .. autoclass:: LinesGroup
 .. autoclass:: Line
 .. autoclass:: TextBlock
-.. autofunction:: default_group_line
+.. autofunction:: default_line_grouper
 .. autoclass:: LineInfo
 
 Dump PDF data structures
@@ -229,31 +229,57 @@ class LineInfo:
     font_size: float
 
 
-def default_group_line(linfo, latest_linfo):
-    """Default line grouping function, merging lines if Y coordinate diff is below
-    some factor of font size, considering bold font variant.
+def default_line_grouper(
+        font_size_diff_factor=0.15,
+        min_y_diff=1.1,
+):
+    """Return a line grouper function suitable for `group_line` argument of
+    :func:`relayout`, configured with arguments
+
+    :param font_size_diff_factor: number that will be multiplied with the
+      greatest font size to give the maximum font size difference allowed - if
+      two line's font sizes are greater than this maximum, they can't be
+      grouped.
+
+    :param min_y_diff: minimum value of allowed Y diff, which is first computed
+      using lines'font size diff, but this minimum value is picked if diff is
+      lower than this value. If two line's Y0 coordinate diff is greater than
+      the resulting allowed diff, they can't be grouped.
+
     """
-    allowed_diff = max(latest_linfo.font_size, linfo.font_size) * 0.15
-    diff = abs(latest_linfo.font_size - linfo.font_size)
-    if ((linfo.font_name.endswith('-bold')
-         and not latest_linfo.font_name.endswith('-bold'))
-        or
-        (latest_linfo.font_name.endswith('-bold')
-         and not linfo.font_name.endswith('-bold'))):
-        allowed_y_diff = diff * 1.5
-    else:
-        allowed_y_diff = diff
-    # take care allowed_y_diff may be 0, 1.1 found empirically
-    allowed_y_diff = max(allowed_y_diff, 1.1)
+    def default_group_line(linfo, latest_linfo):
+        """Default line grouping function, merging lines if font size are compatible and
+        Y coordinate diff is below some factor of font size, considering bold
+        font variant.
 
-    if diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
-        return True
+        """
+        allowed_diff = (
+            max(latest_linfo.font_size, linfo.font_size) * font_size_diff_factor
+        )
+        diff = abs(latest_linfo.font_size - linfo.font_size)
+        if ((linfo.font_name.endswith('-bold')
+             and not latest_linfo.font_name.endswith('-bold'))
+            or
+            (latest_linfo.font_name.endswith('-bold')
+             and not linfo.font_name.endswith('-bold'))):
+            allowed_y_diff = diff * 1.5
+        else:
+            allowed_y_diff = diff
 
-    return False
+        # take care allowed_y_diff may be 0, 1.1 found empirically
+        allowed_y_diff = max(allowed_y_diff, min_y_diff)
+
+        if diff < allowed_diff \
+           and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
+            return True
+
+        return False
+
+    return default_group_line
 
 
 def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
-             ltchar_filter=None, group_line=default_group_line):
+             ltchar_filter=None, group_line=default_line_grouper()):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
     :param skip_classes: tuple of PDFMiner classes that should be skipped (not
