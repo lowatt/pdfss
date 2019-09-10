@@ -496,12 +496,6 @@ class TextBlock:
         self.text += text
 
 
-def compatible_font_size(font_size1, font_size2):
-    return font_size1 == font_size2
-    allowed_diff = max(font_size1, font_size2) * .1
-    return abs(font_size1 - font_size2) <= allowed_diff
-
-
 def iter_text(ltobj, skip_classes=None):
     if skip_classes is not None and isinstance(ltobj, skip_classes):
         return
