@@ -280,6 +280,12 @@ def default_line_grouper(
     return default_group_line
 
 
+def default_merge_text(block, ltchar):
+    width = ltchar.width * 1.4
+    if (ltchar.x0 - block.x1) <= width:
+        return True
+
+    return False
 
 
 def default_iter_text(ltobj, skip_classes=None):
@@ -301,6 +307,7 @@ def relayout(
         ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
         iter_text=default_iter_text,
         ltchar_filter=None,
+        merge_text=default_merge_text,
         group_line=default_line_grouper(),
 ):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
@@ -317,6 +324,11 @@ def relayout(
 
     :param iter_text: function used to recurs on `ltobj` and yield `LTChar` /
       `LTAnno` instances.
+
+    :param merge_text: function used to control text merging, taking a
+      :class:TextBlock as first argument and a `LTChar` instance as second
+      argument and returning `True` if the character should be added to the
+      block, else `False` `LTAnno` instances.
 
     :param group_line: function used to control line grouping, taking
       two :class:LineInfo as argument and returning `True` if they should
@@ -374,7 +386,7 @@ def relayout(
     for (y0, font_name, font_size), ltchar_index in reversed(sorted(
             ltline_index.items()
     )):
-        line = Line(font_name, font_size, y0)
+        line = Line(font_name, font_size, y0, merge_text)
         lines.append(line)
 
         for ltchar in iter_ltchar_index_items(ltchar_index.items()):
@@ -470,7 +482,7 @@ class LinesGroup(list):
 class Line:
     """A logical line, holding a list of text blocks."""
 
-    def __init__(self, font_name, font_size, y0):
+    def __init__(self, font_name, font_size, y0, merge_text):
         self.font_name = font_name
         self.font_size = font_size
         # ordered list of ltchar.x0, use index to get matching ltline from
@@ -479,6 +491,7 @@ class Line:
         # slave list of block
         self.blocks = []
         self.y0 = y0
+        self.merge_text = merge_text
 
     def __repr__(self):
         blocks_str = []
@@ -500,17 +513,15 @@ class Line:
     def append(self, ltchar):
         if ltchar.width == 0:
             # some chars (picto) have width = 0, set it relative to font size
-            # arbitrarily, it's still better than 0. 8 division factor was found
-            # empirically.
+            # arbitrarily, it's still better than 0. 10 division factor was
+            # found empirically.
             assert ltchar.fontsize
             ltchar.width = ltchar.fontsize / 10
             ltchar.x1 = ltchar.x0 + ltchar.width
 
-        width = ltchar.width * 1.4
-
         index = bisect(self._block_index, ltchar.x1)
 
-        if index > 0 and (ltchar.x0 - self.blocks[index - 1].x1) <= width:
+        if index > 0 and self.merge_text(self.blocks[index - 1], ltchar):
             block = self.blocks[index - 1]
             text = ltchar.get_text()
             if ltchar.add_space_left:
