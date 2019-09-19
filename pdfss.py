@@ -142,12 +142,14 @@ def c_amount_float(value):
     """
     >>> c_amount_float('25 028,80 €')
     25028.8
+    >>> c_amount_float('25 028,80 EUR')
+    25028.8
     >>> c_amount_float('25 028,80')
     25028.8
     >>> c_amount_float('4,326 c€ ')
     0.04326
     """
-    value = value.replace('€', '').strip()
+    value = value.replace('€', '').lower().replace('eur', '').strip()
     if value[-1] == 'c':
         value = value[:-1]
         factor = 0.01
