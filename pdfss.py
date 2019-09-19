@@ -695,4 +695,4 @@ if __name__ == '__main__':
         pages = [int(arg) for arg in sys.argv[2:]]
     else:
         pages = None
-    dump_pdf_structure(sys.argv[1], pages=pages)
+    py_dump(sys.argv[1], pages=pages)
