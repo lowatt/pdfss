@@ -280,8 +280,29 @@ def default_line_grouper(
     return default_group_line
 
 
-def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
-             ltchar_filter=None, group_line=default_line_grouper()):
+
+
+def default_iter_text(ltobj, skip_classes=None):
+    if skip_classes is not None and isinstance(ltobj, skip_classes):
+        return
+
+    if isinstance(ltobj, (LTPage, LTContainer)):
+        for subltobj in ltobj._objs:
+            yield from default_iter_text(subltobj, skip_classes)
+
+    elif isinstance(ltobj, (LTChar, LTAnno)):
+        yield ltobj
+
+    else:
+        assert False, ltobj
+
+
+def relayout(
+        ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
+        iter_text=default_iter_text,
+        ltchar_filter=None,
+        group_line=default_line_grouper(),
+):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
     :param skip_classes: tuple of PDFMiner classes that should be skipped (not
@@ -294,7 +315,10 @@ def relayout(ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
     :param ltchar_filter: function taking a `LTChar` instance as argument and
       return `False` if it should not be considered, else `True`
 
-    :param default_group_line: function used to control line grouping, taking
+    :param iter_text: function used to recurs on `ltobj` and yield `LTChar` /
+      `LTAnno` instances.
+
+    :param group_line: function used to control line grouping, taking
       two :class:LineInfo as argument and returning `True` if they should
       begrouped, else `False`. Default to :func:default_group_line.
 
@@ -522,21 +546,6 @@ class TextBlock:
         assert self.x1 <= x1, (self.x1, x1, self.text, text)
         self.x1 = x1
         self.text += text
-
-
-def iter_text(ltobj, skip_classes=None):
-    if skip_classes is not None and isinstance(ltobj, skip_classes):
-        return
-
-    if isinstance(ltobj, (LTPage, LTContainer)):
-        for subltobj in ltobj._objs:
-            yield from iter_text(subltobj, skip_classes)
-
-    elif isinstance(ltobj, (LTChar, LTAnno)):
-        yield ltobj
-
-    else:
-        assert False, ltobj
 
 
 # Dump PDF data structures #############################################
