@@ -538,12 +538,19 @@ class Line:
 
 
 class TextBlock:
-    """A logical group of words."""
+    """A logical group of text.
+
+    :attr text: the text contained in the block
+    :attr x0: the left coordinate of the whole block
+    :attr x1: the right coordinate of the whole block
+    :attr latest_x0: the left coordinate of the latest char in the block
+    """
 
     def __init__(self, text, x0, x1, font_size):
         self.text = text
         self.x0 = x0
         self.x1 = x1
+        self.latest_x0 = x0
 
     def __repr__(self):
         return '<{!r} ({}, {})]>'.format(
@@ -557,6 +564,7 @@ class TextBlock:
         assert self.x1 <= x1, (self.x1, x1, self.text, text)
         self.x1 = x1
         self.text += text
+        self.latest_x0 = x0
 
 
 # Dump PDF data structures #############################################
