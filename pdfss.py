@@ -55,6 +55,7 @@ controlled using :func:relayout arguments.
 .. autoclass:: Line
 .. autoclass:: TextBlock
 .. autofunction:: default_line_grouper
+.. autofunction:: default_text_merger
 .. autoclass:: LineInfo
 
 Dump PDF data structures
@@ -236,7 +237,7 @@ def default_line_grouper(
         min_y_diff=1.1,
 ):
     """Return a line grouper function suitable for `group_line` argument of
-    :func:`relayout`, configured with arguments
+    :func:`relayout`, configured with arguments.
 
     :param font_size_diff_factor: number that will be multiplied with the
       greatest font size to give the maximum font size difference allowed - if
@@ -280,12 +281,23 @@ def default_line_grouper(
     return default_group_line
 
 
-def default_merge_text(block, ltchar):
-    width = ltchar.width * 1.4
-    if (ltchar.x0 - block.x1) <= width:
-        return True
+def default_text_merger(width_factor=1.4):
+    """Return a text merger function suitable for `merge_text` argument of
+    :func:`relayout`, configured with arguments.
 
-    return False
+    :param width_factor: factor to apply to character's width. If spacing
+      between previous block and new character is lesser than the result,
+      character is appended to the block, else a new block is created.
+
+    """
+    def default_merge_text(block, ltchar):
+        width = ltchar.width * width_factor
+        if (ltchar.x0 - block.x1) <= width:
+            return True
+
+        return False
+
+    return default_merge_text
 
 
 def default_iter_text(ltobj, skip_classes=None):
@@ -307,7 +319,7 @@ def relayout(
         ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
         iter_text=default_iter_text,
         ltchar_filter=None,
-        merge_text=default_merge_text,
+        merge_text=default_text_merger(),
         group_line=default_line_grouper(),
 ):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
