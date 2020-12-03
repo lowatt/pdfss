@@ -374,7 +374,7 @@ def relayout(
     # Regroup lines which may be out of sync because of different font size
     # (eg. bold vs standard font)
     latest = None
-    for key, ltchar_index in reversed(sorted(ltline_index.items())):
+    for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
 
         if skip_text is not None and \
            _dump_ltchar_index(ltchar_index) in skip_text:
@@ -395,9 +395,9 @@ def relayout(
 
     # Turn ltline_index into index of Line / TextBlock objects
     lines = []
-    for (y0, font_name, font_size), ltchar_index in reversed(sorted(
-            ltline_index.items()
-    )):
+    for (y0, font_name, font_size), ltchar_index in sorted(
+            ltline_index.items(), reverse=True,
+    ):
         line = Line(font_name, font_size, y0, merge_text)
         lines.append(line)
 
@@ -482,7 +482,7 @@ def _dump_ltline_index(ltline_index):
 
     """
     res = []
-    for key, ltchar_index in reversed(sorted(ltline_index.items())):
+    for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
         res.append('{}: {}'.format(key, _dump_ltchar_index(ltchar_index)))
     return '\n'.join(res)
 
