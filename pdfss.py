@@ -262,7 +262,7 @@ def default_line_grouper(
         diff = abs(latest_linfo.font_size - linfo.font_size)
         if ((linfo.font_name.endswith('-bold')
              and not latest_linfo.font_name.endswith('-bold'))
-            or
+            or  # noqa
             (latest_linfo.font_name.endswith('-bold')
              and not linfo.font_name.endswith('-bold'))):
             allowed_y_diff = diff * 1.5
@@ -311,15 +311,15 @@ def default_iter_text(ltobj, skip_classes=None):
         yield ltobj
 
     else:
-        assert False, ltobj
+        raise RuntimeError("Unexpected object", ltobj)
 
 
 def relayout(
         ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
         iter_text=default_iter_text,
         ltchar_filter=None,
-        merge_text=default_text_merger(),
-        group_line=default_line_grouper(),
+        merge_text=default_text_merger(),  # noqa
+        group_line=default_line_grouper(),  # noqa
 ):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
