@@ -863,7 +863,7 @@ class DumpPDFStructureTC(unittest.TestCase):
 
         text = output.getvalue()
         self.assertIn(
-            r"<LTTextLineHorizontal 56.800,610.708,156.004,627.304 "
+            r"<LTTextLineHorizontal 56.800,610.708,156.004,622.708 "
             r"'Galettes de lentilles\n'>",
             text
         )
