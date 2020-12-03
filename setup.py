@@ -39,7 +39,6 @@ setup(
 
     py_modules=['pdfss'],
     install_requires=[
-        'chardet',  # XXX https://github.com/pdfminer/pdfminer.six/issues/213
         'pdfminer.six',
     ],
 )
