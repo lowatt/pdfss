@@ -412,10 +412,10 @@ def relayout(
         group.append(line)
         previous_line_group = group
 
-    return list(sorted(
+    return sorted(
         (group for groups in group_index.values() for group in groups),
-        key=lambda group: -group[0].y0
-    ))
+        key=lambda group: -group[0].y0,
+    )
 
 
 def _line_group(line, group_index, previous_line_group):
