@@ -271,7 +271,6 @@ def default_line_grouper(
 
         # take care allowed_y_diff may be 0, 1.1 found empirically
         allowed_y_diff = max(allowed_y_diff, min_y_diff)
-
         if diff < allowed_diff \
            and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
             return True
@@ -386,7 +385,6 @@ def relayout(
             latest_key, latest_ltchar_index = latest
             latest_linfo = LineInfo(*latest_key)
             assert (latest_linfo.y0 - linfo.y0) >= 0
-
             if group_line(linfo, latest_linfo):
                 ltchar_index.update(latest_ltchar_index)
                 ltline_index.pop(latest_key)

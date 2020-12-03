@@ -21,7 +21,7 @@ from setuptools import setup
 
 setup(
     name='pdfss',
-    version='2.1.0',
+    version='2.1.1',
     url='https://github.com/lowatt/lowatt_pdfss',
 
     license='GPL3',
