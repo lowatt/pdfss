@@ -1,4 +1,3 @@
-import doctest
 from io import StringIO
 from os.path import abspath, dirname, join
 import unittest
@@ -879,14 +878,6 @@ class PyDumpTC(unittest.TestCase):
         exec_locals = read_py(out.getvalue())
         self.assertIn('page1', exec_locals)
         self.assertIn('page2', exec_locals)
-
-
-def load_tests(loader, tests, ignore):
-    tests.addTests(
-        doctest.DocTestSuite('pdfss',
-                             optionflags=doctest.NORMALIZE_WHITESPACE)
-    )
-    return tests
 
 
 if __name__ == '__main__':
