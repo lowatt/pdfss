@@ -30,7 +30,7 @@ class PDF2TextTC(unittest.TestCase):
         text = text_stream.read()
         self.assertTrue(
             text.startswith('Galettes de lentilles\nDes lentilles'),
-            text
+            text,
         )
 
 
@@ -231,7 +231,7 @@ class RelayoutTC(unittest.TestCase):
                      '100'],
                     ['', 'Opérateur Heures creuses été', '100'],
                 ],
-            ]
+            ],
         )
 
     def test_edf_c1_10080595767_p1(self):
@@ -287,7 +287,7 @@ class RelayoutTC(unittest.TestCase):
                      'intervenue entre temps)'],
                 ],
                 [['Electricité']],
-            ]
+            ],
         )
 
     def test_edf_c1_10036338943_p1(self):
@@ -322,9 +322,9 @@ class RelayoutTC(unittest.TestCase):
                  ["Aucun escompte n'est accordé pour paiement anticipé"]],
                 [['Prochaine facture vers le 02/03/2016']],
                 [['Maintenant EDF vend du gaz naturel, contactez votre '
-                  'conseiller commercial']]
+                  'conseiller commercial']],
 
-            ]
+            ],
         )
 
     def test_edf_c2_10073292263_p1(self):
@@ -395,8 +395,8 @@ class RelayoutTC(unittest.TestCase):
                     ['à partir du :', '28/03/2018'],
                     ['sur le compte bancaire : FR XX XXXXX XXXXX '
                      '00002009999 XX'],
-                ]
-            ]
+                ],
+            ],
         )
 
     def test_edf_c2_10073292263_p18(self):
@@ -487,9 +487,9 @@ class RelayoutTC(unittest.TestCase):
                     ['485157 le 01/12/2017', '694675 le 31/12/2017'],
                     ['413142 le 01/12/2017', '413142 le 31/12/2017'],
                     ['709046 le 01/12/2017', '709046 le 31/12/2017'],
-                ]
+                ],
 
-            ]
+            ],
         )
 
     def test_edf_c2_10073292263_p30(self):
@@ -560,7 +560,7 @@ class RelayoutTC(unittest.TestCase):
                      'du 01/12/2017 au 31/12/2017 : Heures Creuses Eté',
                      '0'],
                 ],
-            ]
+            ],
         )
 
     def test_edf_c2_10067224248_p5(self):
@@ -730,7 +730,7 @@ class RelayoutTC(unittest.TestCase):
                      '4.35 c€ /kW',
                      '887,60'],
                 ],
-            ]
+            ],
         )
 
     def test_text_block_separation(self):
@@ -822,7 +822,7 @@ class RelayoutTC(unittest.TestCase):
                 [['Assiette', 'Prix unitaire HorsTVA', 'Taux de TVA']],
                 [['2 020 246 kWh', '0,750 c€ /kWh', '15 151,85 €', '20,00 %']],
                 [['7 637,89', '27,04 %', '2 065,29 €', '20,00 %']],
-            ]
+            ],
         )
 
     def test_text_merge1(self):
@@ -831,8 +831,8 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                  [["Taxe Communale sur la Consommation Finale "
-                   "d'Electricité (TCCFE)"]]
-            ]
+                   "d'Electricité (TCCFE)"]],
+            ],
         )
 
     def test_text_merge2(self):
@@ -841,7 +841,7 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                  [['3 993,99 €', 'Taux de TVA']],
-            ]
+            ],
         )
 
     def test_euro_fix(self):
@@ -850,7 +850,7 @@ class RelayoutTC(unittest.TestCase):
             result,
             [
                 [['97.41 c€ /c.j']],
-            ]
+            ],
         )
 
 
@@ -865,7 +865,7 @@ class DumpPDFStructureTC(unittest.TestCase):
         self.assertIn(
             r"<LTTextLineHorizontal 56.800,610.708,156.004,622.708 "
             r"'Galettes de lentilles\n'>",
-            text
+            text,
         )
 
 
