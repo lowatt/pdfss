@@ -1,10 +1,11 @@
 include .flake8
 include requirements.txt
 include pytest.ini
+include mypy.ini
 include tox.ini
 include COPYING
-
-include *.py
+include pdfss/py.typed
+include pdfss/*.py
 
 recursive-include test *.py *.yml
 recursive-include test/data *.pdf

@@ -36,8 +36,12 @@ setup(
     'extract information from pdf/text files',
     author='Sylvain Thénault',
     author_email='info@lowatt.fr',
-
-    py_modules=['pdfss'],
+    packages=["pdfss"],
+    package_data={
+        "pdfss": ["py.typed"],
+    },
+    include_package_data=True,
+    zip_safe=False,
     install_requires=[
         'pdfminer.six',
     ],

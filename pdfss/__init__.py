@@ -76,6 +76,11 @@ from io import BytesIO, TextIOWrapper
 import logging
 import re
 import sys
+from typing import List
+from typing import IO
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
@@ -96,7 +101,7 @@ DEFAULT_SKIP_CLASSES = (
 
 # High-level functions #################################################
 
-def pdf2text(stream):
+def pdf2text(stream: IO[bytes]) -> TextIOWrapper:
     """Return a text stream from a PDF stream."""
     bytes_stream = BytesIO()
     extract_text_to_fp(stream, bytes_stream, laparams=LAParams())
@@ -124,7 +129,7 @@ def iter_pdf_ltpages(stream, pages=None):
 
 # Low-level text manipulation ##########################################
 
-def c_dmy_date(date_string):
+def c_dmy_date(date_string: str) -> date:
     """Return a date formatted as string like 22/04/2018 to a class:`datetime.date`
     instance.
 
@@ -139,7 +144,7 @@ def c_dmy_date(date_string):
     return date(*(int(part) for part in reversed(parts)))
 
 
-def c_amount_float(value):
+def c_amount_float(value: str) -> float:
     """
     >>> c_amount_float('25 028,80 €')
     25028.8
@@ -159,7 +164,7 @@ def c_amount_float(value):
     return round(c_str_float(value) * factor, 6)
 
 
-def c_amount_float_unit(value):
+def c_amount_float_unit(value: str) -> Tuple[float, str]:
     """
     >>> c_amount_float_unit('25 028,80 €/mois')
     (25028.8, 'mois')
@@ -168,7 +173,7 @@ def c_amount_float_unit(value):
     return (c_amount_float(amount_str), unit.strip())
 
 
-def c_percent_float(value):
+def c_percent_float(value: str) -> Union[int, float]:
     """
     >>> c_percent_float('20,00%')
     20.0
@@ -176,7 +181,7 @@ def c_percent_float(value):
     return c_str_float(value.replace('%', ''))
 
 
-def c_str_period(value):
+def c_str_period(value: str) -> Tuple[date, date]:
     """
     >>> c_str_period('du 01/05/2018 au 31/05/2018')
     (datetime.date(2018, 5, 1), datetime.date(2018, 5, 31))
@@ -186,7 +191,7 @@ def c_str_period(value):
     return (c_dmy_date(from_date_str), c_dmy_date(to_date_str))
 
 
-def c_str_float_unit(value):
+def c_str_float_unit(value: str) -> Tuple[Union[int, float], str]:
     """
     >>> c_str_float_unit('25 028 kWh')
     (25028, 'kWh')
@@ -197,7 +202,7 @@ def c_str_float_unit(value):
     return c_str_float(float_str.strip()), unit.strip()
 
 
-def c_str_float(value):
+def c_str_float(value: str) -> Union[int, float]:
     """
     >>> c_str_float('25 028,80')
     25028.8
@@ -211,7 +216,7 @@ def c_str_float(value):
         return float(value)
 
 
-def colon_right(line):
+def colon_right(line: str) -> str:
     """
     >>> colon_right('colon separated : value')
     'value'
@@ -701,8 +706,7 @@ LTChar.__init__ = _ltchar_record_fontsize_init
 ########################################################################
 
 if __name__ == '__main__':
+    pages: Optional[List[int]] = None
     if len(sys.argv) >= 3:
         pages = [int(arg) for arg in sys.argv[2:]]
-    else:
-        pages = None
     py_dump(sys.argv[1], pages=pages)
