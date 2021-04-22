@@ -76,6 +76,8 @@ from io import BytesIO, TextIOWrapper
 import logging
 import re
 import sys
+from typing import Optional
+from typing import List
 
 from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
@@ -701,8 +703,7 @@ LTChar.__init__ = _ltchar_record_fontsize_init
 ########################################################################
 
 if __name__ == '__main__':
+    pages: Optional[List[int]] = None
     if len(sys.argv) >= 3:
         pages = [int(arg) for arg in sys.argv[2:]]
-    else:
-        pages = None
     py_dump(sys.argv[1], pages=pages)

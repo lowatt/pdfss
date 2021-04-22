@@ -1,6 +1,7 @@
 include .flake8
 include requirements.txt
 include pytest.ini
+include mypy.ini
 include tox.ini
 include COPYING
 
