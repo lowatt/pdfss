@@ -81,7 +81,9 @@ from typing import IO
 from typing import Optional
 from typing import Tuple
 from typing import Union
+import zlib
 
+from pdfminer import settings
 from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
@@ -92,11 +94,45 @@ from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 
 
-LOGGER = logging.getLogger('lowatt.pdfss')
+settings.STRICT = True
+
+LOGGER = logging.getLogger("lowatt.pdfss")
 
 DEFAULT_SKIP_CLASSES = (
     LTCurve, LTFigure, LTImage, LTLine, LTRect,
 )
+
+# hack zlib to handle decompression of broken pdffile until this is handled in
+# pdfminer (https://github.com/pdfminer/pdfminer.six/pull/637)
+
+orig_decompress = zlib.decompress
+
+
+def hacked_decompress(data):
+    try:
+        return orig_decompress(data)
+    except zlib.error:
+        return decompress_corrupted(data)
+
+
+def decompress_corrupted(data):
+    d = zlib.decompressobj(zlib.MAX_WBITS | 32)
+    f = BytesIO(data)
+    result_str = b""
+    buffer = f.read(1)
+    i = 0
+    try:
+        while buffer:
+            result_str += d.decompress(buffer)
+            buffer = f.read(1)
+            i += 1
+    except zlib.error:
+        if i < len(data) - 3:
+            raise
+    return result_str
+
+
+zlib.decompress = hacked_decompress
 
 
 # High-level functions #################################################
