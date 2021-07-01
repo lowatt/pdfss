@@ -20,22 +20,20 @@
 from setuptools import setup
 
 setup(
-    name='pdfss',
-    version='2.1.1',
-    url='https://github.com/lowatt/lowatt_pdfss',
-
-    license='GPL3',
+    name="pdfss",
+    version="2.1.1",
+    url="https://github.com/lowatt/lowatt_pdfss",
+    license="GPL3",
     classifiers=[
         "Programming Language :: Python :: 3.6",
-        "License :: OSI Approved :: GNU General Public License v3 or later "
-        "(GPLv3+)",
+        "License :: OSI Approved :: GNU General Public License v3 or later " "(GPLv3+)",
         "Operating System :: OS Independent",
     ],
-    description='PDF scraping system',
-    long_description='Library providing generic and composable helpers to '
-    'extract information from pdf/text files',
-    author='Sylvain Thénault',
-    author_email='info@lowatt.fr',
+    description="PDF scraping system",
+    long_description="Library providing generic and composable helpers to "
+    "extract information from pdf/text files",
+    author="Sylvain Thénault",
+    author_email="info@lowatt.fr",
     packages=["pdfss"],
     package_data={
         "pdfss": ["py.typed"],
@@ -43,6 +41,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'pdfminer.six',
+        "pdfminer.six",
     ],
 )

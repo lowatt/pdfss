@@ -1,0 +1,15 @@
+[tool.black]
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.hg
+    | \.eggs
+    | \.tox
+    | build
+    | dist
+    | test/data
+  )/
+)
+'''
