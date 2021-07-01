@@ -11,7 +11,7 @@ ignore =
   P102, # [string-format] docstring does contain unindexed parameters
   W503, # Line break occurred before a binary operator (to keep operators aligned)
 
-max-line-length = 80
+max-line-length = 100
 exclude = doc/*,.tox/*,.eggs,test/data
 #import-order-style = google
 #application-import-names=lowatt_core

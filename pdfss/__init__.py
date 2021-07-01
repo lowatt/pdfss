@@ -87,8 +87,19 @@ from pdfminer import settings
 from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import (
-    LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTLine,
-    LTPage, LTRect, LTTextBox, LTTextBoxHorizontal, LTTextLine,
+    LAParams,
+    LTAnno,
+    LTChar,
+    LTContainer,
+    LTCurve,
+    LTFigure,
+    LTImage,
+    LTLine,
+    LTPage,
+    LTRect,
+    LTTextBox,
+    LTTextBoxHorizontal,
+    LTTextLine,
 )
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -99,7 +110,11 @@ settings.STRICT = True
 LOGGER = logging.getLogger("lowatt.pdfss")
 
 DEFAULT_SKIP_CLASSES = (
-    LTCurve, LTFigure, LTImage, LTLine, LTRect,
+    LTCurve,
+    LTFigure,
+    LTImage,
+    LTLine,
+    LTRect,
 )
 
 # hack zlib to handle decompression of broken pdffile until this is handled in
@@ -137,12 +152,13 @@ zlib.decompress = hacked_decompress
 
 # High-level functions #################################################
 
+
 def pdf2text(stream: IO[bytes]) -> TextIOWrapper:
     """Return a text stream from a PDF stream."""
     bytes_stream = BytesIO()
     extract_text_to_fp(stream, bytes_stream, laparams=LAParams())
     bytes_stream.seek(0)
-    return TextIOWrapper(bytes_stream, 'utf-8')
+    return TextIOWrapper(bytes_stream, "utf-8")
 
 
 def iter_pdf_ltpages(stream, pages=None):
@@ -158,12 +174,13 @@ def iter_pdf_ltpages(stream, pages=None):
     interpreter = PDFPageInterpreter(rsrcmgr, device)
 
     for n, pdfpage in enumerate(PDFPage.get_pages(stream)):
-        if pages is None or (n+1) in pages:
+        if pages is None or (n + 1) in pages:
             interpreter.process_page(pdfpage)
             yield device.get_result()
 
 
 # Low-level text manipulation ##########################################
+
 
 def c_dmy_date(date_string: str) -> date:
     """Return a date formatted as string like 22/04/2018 to a class:`datetime.date`
@@ -174,9 +191,9 @@ def c_dmy_date(date_string: str) -> date:
     >>> c_dmy_date('09/05/18')
     datetime.date(2018, 5, 9)
     """
-    parts = date_string.split('/')
+    parts = date_string.split("/")
     if len(parts[-1]) == 2:
-        parts[-1] = '20' + parts[-1]
+        parts[-1] = "20" + parts[-1]
     return date(*(int(part) for part in reversed(parts)))
 
 
@@ -191,8 +208,8 @@ def c_amount_float(value: str) -> float:
     >>> c_amount_float('4,326 c€ ')
     0.04326
     """
-    value = value.replace('€', '').lower().replace('eur', '').strip()
-    if value[-1] == 'c':
+    value = value.replace("€", "").lower().replace("eur", "").strip()
+    if value[-1] == "c":
         value = value[:-1]
         factor = 0.01
     else:
@@ -205,7 +222,7 @@ def c_amount_float_unit(value: str) -> Tuple[float, str]:
     >>> c_amount_float_unit('25 028,80 €/mois')
     (25028.8, 'mois')
     """
-    amount_str, unit = value.split('/')
+    amount_str, unit = value.split("/")
     return (c_amount_float(amount_str), unit.strip())
 
 
@@ -214,7 +231,7 @@ def c_percent_float(value: str) -> Union[int, float]:
     >>> c_percent_float('20,00%')
     20.0
     """
-    return c_str_float(value.replace('%', ''))
+    return c_str_float(value.replace("%", ""))
 
 
 def c_str_period(value: str) -> Tuple[date, date]:
@@ -222,8 +239,8 @@ def c_str_period(value: str) -> Tuple[date, date]:
     >>> c_str_period('du 01/05/2018 au 31/05/2018')
     (datetime.date(2018, 5, 1), datetime.date(2018, 5, 31))
     """
-    from_date_str, to_date_str = value.split(' au ')
-    from_date_str = from_date_str.replace('du ', '')
+    from_date_str, to_date_str = value.split(" au ")
+    from_date_str = from_date_str.replace("du ", "")
     return (c_dmy_date(from_date_str), c_dmy_date(to_date_str))
 
 
@@ -234,7 +251,7 @@ def c_str_float_unit(value: str) -> Tuple[Union[int, float], str]:
     >>> c_str_float_unit('- 25 028.2 € / W')
     (-25028.2, '€ / W')
     """
-    float_str, unit = re.split(r'(?=[^-\d,\. ]+)', value.strip(), 1)
+    float_str, unit = re.split(r"(?=[^-\d,\. ]+)", value.strip(), 1)
     return c_str_float(float_str.strip()), unit.strip()
 
 
@@ -245,7 +262,7 @@ def c_str_float(value: str) -> Union[int, float]:
     >>> c_str_float('25')
     25
     """
-    value = value.replace(' ', '').replace(',', '.')
+    value = value.replace(" ", "").replace(",", ".")
     try:
         return int(value)
     except ValueError:
@@ -257,10 +274,11 @@ def colon_right(line: str) -> str:
     >>> colon_right('colon separated : value')
     'value'
     """
-    return line.split(':')[-1].strip()
+    return line.split(":")[-1].strip()
 
 
 # PDF data extraction API ##############################################
+
 
 @dataclass
 class LineInfo:
@@ -268,14 +286,15 @@ class LineInfo:
     grouping.
 
     """
+
     y0: float
     font_name: str
     font_size: float
 
 
 def default_line_grouper(
-        font_size_diff_factor=0.15,
-        min_y_diff=1.1,
+    font_size_diff_factor=0.15,
+    min_y_diff=1.1,
 ):
     """Return a line grouper function suitable for `group_line` argument of
     :func:`relayout`, configured with arguments.
@@ -291,6 +310,7 @@ def default_line_grouper(
       the resulting allowed diff, they can't be grouped.
 
     """
+
     def default_group_line(linfo, latest_linfo):
         """Default line grouping function, merging lines if font size are compatible and
         Y coordinate diff is below some factor of font size, considering bold
@@ -301,19 +321,20 @@ def default_line_grouper(
             max(latest_linfo.font_size, linfo.font_size) * font_size_diff_factor
         )
         diff = abs(latest_linfo.font_size - linfo.font_size)
-        if ((linfo.font_name.endswith('-bold')
-             and not latest_linfo.font_name.endswith('-bold'))
-            or  # noqa
-            (latest_linfo.font_name.endswith('-bold')
-             and not linfo.font_name.endswith('-bold'))):
+        if (
+            linfo.font_name.endswith("-bold")
+            and not latest_linfo.font_name.endswith("-bold")
+        ) or (  # noqa
+            latest_linfo.font_name.endswith("-bold")
+            and not linfo.font_name.endswith("-bold")
+        ):
             allowed_y_diff = diff * 1.5
         else:
             allowed_y_diff = diff
 
         # take care allowed_y_diff may be 0, 1.1 found empirically
         allowed_y_diff = max(allowed_y_diff, min_y_diff)
-        if diff < allowed_diff \
-           and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
+        if diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
             return True
 
         return False
@@ -330,6 +351,7 @@ def default_text_merger(width_factor=1.4):
       character is appended to the block, else a new block is created.
 
     """
+
     def default_merge_text(block, ltchar):
         width = ltchar.width * width_factor
         if (ltchar.x0 - block.x1) <= width:
@@ -356,11 +378,13 @@ def default_iter_text(ltobj, skip_classes=None):
 
 
 def relayout(
-        ltobj, skip_classes=DEFAULT_SKIP_CLASSES, skip_text=None,
-        iter_text=default_iter_text,
-        ltchar_filter=None,
-        merge_text=default_text_merger(),  # noqa
-        group_line=default_line_grouper(),  # noqa
+    ltobj,
+    skip_classes=DEFAULT_SKIP_CLASSES,
+    skip_text=None,
+    iter_text=default_iter_text,
+    ltchar_filter=None,
+    merge_text=default_text_merger(),  # noqa
+    group_line=default_line_grouper(),  # noqa
 ):
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
@@ -387,6 +411,7 @@ def relayout(
       begrouped, else `False`. Default to :func:default_group_line.
 
     """
+
     def iter_ltchar_index_items(items):
         for _, ltchars in sorted(items):
             for ltchar in ltchars:
@@ -395,6 +420,7 @@ def relayout(
     # Collect ltchar instances
     ltline_index = defaultdict(partial(defaultdict, list))
     latest_is_anno = False
+
     for lttext in iter_text(ltobj, skip_classes):
         if isinstance(lttext, LTAnno):
             latest_is_anno = True
@@ -416,8 +442,7 @@ def relayout(
     latest = None
     for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
 
-        if skip_text is not None and \
-           _dump_ltchar_index(ltchar_index) in skip_text:
+        if skip_text is not None and _dump_ltchar_index(ltchar_index) in skip_text:
             ltline_index.pop(key)
             continue
 
@@ -435,7 +460,8 @@ def relayout(
     # Turn ltline_index into index of Line / TextBlock objects
     lines = []
     for (y0, font_name, font_size), ltchar_index in sorted(
-            ltline_index.items(), reverse=True,
+        ltline_index.items(),
+        reverse=True,
     ):
         line = Line(font_name, font_size, y0, merge_text)
         lines.append(line)
@@ -489,8 +515,10 @@ def _line_group(line, group_index, previous_line_group):
         group = LinesGroup()
         group_index[start_index].append(group)
     # or if previous line overlap x coordinate
-    elif (previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
-          and previous_line_group[-1].blocks[0].x0 < line.blocks[-1].x1):
+    elif (
+        previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
+        and previous_line_group[-1].blocks[0].x0 < line.blocks[-1].x1
+    ):
         group = LinesGroup()
         group_index[start_index].append(group)
 
@@ -502,13 +530,14 @@ def _dump_ltchar_index(ltchar_index):
     for debugging purpose.
 
     """
+
     def ltchar_text(ltchar, i):
         text = ltchar.get_text()
         if i > 0 and ltchar.add_space_left:
-            text = ' ' + text
+            text = " " + text
         return text
 
-    return ''.join(
+    return "".join(
         ltchar_text(ltchar, i)
         for i, (_, ltchars) in enumerate(sorted(ltchar_index.items()))
         for ltchar in ltchars
@@ -522,8 +551,8 @@ def _dump_ltline_index(ltline_index):
     """
     res = []
     for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
-        res.append('{}: {}'.format(key, _dump_ltchar_index(ltchar_index)))
-    return '\n'.join(res)
+        res.append("{}: {}".format(key, _dump_ltchar_index(ltchar_index)))
+    return "\n".join(res)
 
 
 class LinesGroup(list):
@@ -548,17 +577,17 @@ class Line:
         blocks_str = []
         for block in self.blocks:
             blocks_str.append(repr(block))
-        return '[{}: {}]'.format(self.font_size, ', '.join(blocks_str))
+        return "[{}: {}]".format(self.font_size, ", ".join(blocks_str))
 
     def __str__(self):
         blocks_str = []
         for block in self.blocks:
             blocks_str.append(str(block))
 
-        return '[{}]'.format(', '.join(blocks_str))
+        return "[{}]".format(", ".join(blocks_str))
 
     def insert_blank_at(self, index):
-        self.blocks.insert(0, TextBlock('', 0, 0, 0))
+        self.blocks.insert(0, TextBlock("", 0, 0, 0))
         self._block_index.insert(0, 0)
 
     def append(self, ltchar):
@@ -576,12 +605,11 @@ class Line:
             block = self.blocks[index - 1]
             text = ltchar.get_text()
             if ltchar.add_space_left:
-                text = ' ' + text
+                text = " " + text
             block.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)
             self._block_index[index - 1] = ltchar.x1
         else:
-            block = TextBlock(ltchar.get_text(), ltchar.x0, ltchar.x1,
-                              ltchar.fontsize)
+            block = TextBlock(ltchar.get_text(), ltchar.x0, ltchar.x1, ltchar.fontsize)
             self.blocks.insert(index, block)
             self._block_index.insert(index, ltchar.x1)
 
@@ -604,11 +632,10 @@ class TextBlock:
         self.latest_x0 = x0
 
     def __repr__(self):
-        return '<{!r} ({}, {})]>'.format(
-            self.text, self.x0, self.x1)
+        return "<{!r} ({}, {})]>".format(self.text, self.x0, self.x1)
 
     def __str__(self):
-        return '<{!r}>'.format(self.text)
+        return "<{!r}>".format(self.text)
 
     def append(self, text, x0, x1, font_size):
         assert self.x0 <= x0, (self.x0, x0, self.text, text)
@@ -620,6 +647,7 @@ class TextBlock:
 
 # Dump PDF data structures #############################################
 
+
 def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
     """Print PDFMiner's structure extracted from the given PDF file, to help
     debugging or building scrapers.
@@ -630,21 +658,20 @@ def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
     Print by default on stdout but you may give an alternate `file` stream into
     which data will be written.
     """
-    with open(filepath, 'rb') as stream:
+    with open(filepath, "rb") as stream:
         for i, page in enumerate(iter_pdf_ltpages(stream, pages=pages)):
-            print('{} page {}'.format('*'*80, i+1))
-            objstack = [('', o) for o in reversed(page._objs)]
+            print("{} page {}".format("*" * 80, i + 1))
+            objstack = [("", o) for o in reversed(page._objs)]
             while objstack:
                 prefix, b = objstack.pop()
                 if type(b) in [LTTextBox, LTTextLine, LTTextBoxHorizontal]:
                     print(prefix, b, file=file)
-                    objstack += ((prefix + '  ', o) for o in reversed(b._objs))
+                    objstack += ((prefix + "  ", o) for o in reversed(b._objs))
                 else:
                     print(prefix, b, file=file)
 
 
-def py_dump(filepath, out=sys.stdout, pages=None,
-            skip_classes=DEFAULT_SKIP_CLASSES):
+def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=DEFAULT_SKIP_CLASSES):
     """Dump PDF `filepath` file as an importable python structure in `out` stream.
 
     :param filepath: path to the PDF file.
@@ -657,12 +684,12 @@ def py_dump(filepath, out=sys.stdout, pages=None,
       dumped.
 
     """
-    print('from pdfminer.layout import *', file=out)
-    print('from pdfss import ltobj\n\n', file=out)
+    print("from pdfminer.layout import *", file=out)
+    print("from pdfss import ltobj\n\n", file=out)
 
-    with open(filepath, 'rb') as input_stream:
+    with open(filepath, "rb") as input_stream:
         for i, page in enumerate(iter_pdf_ltpages(input_stream, pages=pages)):
-            print('\npage{} = '.format(i+1), file=out, end='')
+            print("\npage{} = ".format(i + 1), file=out, end="")
             py_dump_ltobj(page, out=out, skip_classes=skip_classes)
 
 
@@ -684,20 +711,27 @@ def py_dump_ltobj(ltobj, out=sys.stdout, skip_classes=None, indent=0):
         return
 
     if isinstance(ltobj, LTContainer):
-        print('{}ltobj({}, {}, ['.format('  ' * indent,
-                                         ltobj.__class__.__name__,
-                                         _clean_ltobj_dict(ltobj.__dict__)),
-              file=out)
+        print(
+            "{}ltobj({}, {}, [".format(
+                "  " * indent,
+                ltobj.__class__.__name__,
+                _clean_ltobj_dict(ltobj.__dict__),
+            ),
+            file=out,
+        )
         for subltobj in ltobj._objs:
             py_dump_ltobj(subltobj, out, skip_classes, indent + 1)
-        print('{}]){}'.format('  ' * indent, ',' if indent else ''),
-              file=out)
+        print("{}]){}".format("  " * indent, "," if indent else ""), file=out)
 
     else:
-        print('{}ltobj({}, {}),'.format('  ' * indent,
-                                        ltobj.__class__.__name__,
-                                        _clean_ltobj_dict(ltobj.__dict__)),
-              file=out)
+        print(
+            "{}ltobj({}, {}),".format(
+                "  " * indent,
+                ltobj.__class__.__name__,
+                _clean_ltobj_dict(ltobj.__dict__),
+            ),
+            file=out,
+        )
 
 
 class ltobj:
@@ -705,12 +739,13 @@ class ltobj:
 
     **You should not use this directly**.
     """
+
     def __init__(self, __class__, __dict__, objs=None):
         self.__class__ = __class__
         self.__dict__ = __dict__
         if objs is not None:
             self._objs = objs
-        if 'x0' in __dict__:
+        if "x0" in __dict__:
             # bbox necessary for repr() but not exported
             self.bbox = (self.x0, self.y0, self.x1, self.y1)
 
@@ -719,6 +754,7 @@ def _clean_ltobj_dict(__dict__):
     """Return a dictionary from an ltobj's __dict__, removing entries that should
     not be exported and rounding float for better readability.
     """
+
     def round_value(v):
         if isinstance(v, float):
             return round(v, 2)
@@ -726,8 +762,11 @@ def _clean_ltobj_dict(__dict__):
             return tuple(round_value(item) for item in v)
         return v
 
-    return {k: round_value(v) for k, v in __dict__.items()
-            if k not in {'_objs', 'bbox', 'graphicstate', 'groups', 'ncs'}}
+    return {
+        k: round_value(v)
+        for k, v in __dict__.items()
+        if k not in {"_objs", "bbox", "graphicstate", "groups", "ncs"}
+    }
 
 
 def _ltchar_record_fontsize_init(self, matrix, font, fontsize, *args, **kwargs):
@@ -741,7 +780,7 @@ LTChar.__init__ = _ltchar_record_fontsize_init
 
 ########################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pages: Optional[List[int]] = None
     if len(sys.argv) >= 3:
         pages = [int(arg) for arg in sys.argv[2:]]
