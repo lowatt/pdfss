@@ -67,25 +67,21 @@ Dump PDF data structures
 
 from __future__ import generator_stop
 
+import logging
+import re
+import sys
+import zlib
 from bisect import bisect
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
 from functools import partial
 from io import BytesIO, TextIOWrapper
-import logging
-import re
-import sys
-from typing import List
-from typing import IO
-from typing import Optional
-from typing import Tuple
-from typing import Union
-import zlib
+from typing import IO, List, Optional, Tuple, Union
 
 from pdfminer import settings
-from pdfminer.high_level import extract_text_to_fp
 from pdfminer.converter import PDFPageAggregator
+from pdfminer.high_level import extract_text_to_fp
 from pdfminer.layout import (
     LAParams,
     LTAnno,
@@ -103,7 +99,6 @@ from pdfminer.layout import (
 )
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
-
 
 settings.STRICT = True
 
@@ -420,7 +415,14 @@ def relayout(
     # Collect ltchar instances
     ltline_index = defaultdict(partial(defaultdict, list))
     latest_is_anno = False
-
+    # Hack for page containing a figure wrapping content while we want it
+    # skipped
+    if (
+        len(ltobj._objs) == 1
+        and isinstance(ltobj._objs[0], LTFigure)
+        and LTFigure in skip_classes
+    ):
+        ltobj._objs = ltobj._objs[0]._objs
     for lttext in iter_text(ltobj, skip_classes):
         if isinstance(lttext, LTAnno):
             latest_is_anno = True
