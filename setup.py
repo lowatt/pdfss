@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018 by Sylvain Thénault sylvain@lowatt.fr
+# Copyright (c) 2018-2022 by Lowatt info@lowatt.fr
 #
 # This program is part of pdfss.
 #
@@ -32,7 +32,7 @@ setup(
     description="PDF scraping system",
     long_description="Library providing generic and composable helpers to "
     "extract information from pdf/text files",
-    author="Sylvain Thénault",
+    author="Lowatt",
     author_email="info@lowatt.fr",
     packages=["pdfss"],
     package_data={
