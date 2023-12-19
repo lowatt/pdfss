@@ -1,0 +1,4 @@
+dist
+.tox
+.mypy_cache
+.coverage
