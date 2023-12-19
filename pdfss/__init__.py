@@ -246,7 +246,7 @@ def c_str_float_unit(value: str) -> Tuple[Union[int, float], str]:
     >>> c_str_float_unit('- 25 028.2 € / W')
     (-25028.2, '€ / W')
     """
-    float_str, unit = re.split(r"(?=[^-\d,\. ]+)", value.strip(), 1)
+    float_str, unit = re.split(r"(?=[^-\d,\. ]+)", value.strip(), maxsplit=1)
     return c_str_float(float_str.strip()), unit.strip()
 
 
