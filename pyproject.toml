@@ -25,6 +25,15 @@ dependencies = [
     "pdfminer.six",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+typing = [
+    "mypy",
+]
+
 [project.urls]
 Source = "https://github.com/lowatt/pdfss"
 Tracker = "https://github.com/lowatt/pdfss/issues"
