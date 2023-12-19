@@ -142,7 +142,7 @@ def decompress_corrupted(data):
     return result_str
 
 
-zlib.decompress = hacked_decompress
+zlib.decompress = hacked_decompress  # type: ignore[assignment]
 
 
 # High-level functions #################################################
@@ -151,7 +151,7 @@ zlib.decompress = hacked_decompress
 def pdf2text(stream: IO[bytes]) -> TextIOWrapper:
     """Return a text stream from a PDF stream."""
     bytes_stream = BytesIO()
-    extract_text_to_fp(stream, bytes_stream, laparams=LAParams())
+    extract_text_to_fp(stream, bytes_stream, laparams=LAParams())  # type: ignore[arg-type]
     bytes_stream.seek(0)
     return TextIOWrapper(bytes_stream, "utf-8")
 
@@ -776,7 +776,7 @@ def _ltchar_record_fontsize_init(self, matrix, font, fontsize, *args, **kwargs):
 
 
 ltchar_init = LTChar.__init__
-LTChar.__init__ = _ltchar_record_fontsize_init
+LTChar.__init__ = _ltchar_record_fontsize_init  # type: ignore[method-assign]
 
 
 ########################################################################
