@@ -443,7 +443,6 @@ def relayout(
     # (eg. bold vs standard font)
     latest = None
     for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
-
         if skip_text is not None and _dump_ltchar_index(ltchar_index) in skip_text:
             ltline_index.pop(key)
             continue
