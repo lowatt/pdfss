@@ -63,9 +63,9 @@ Dump PDF data structures
 .. autofunction:: py_dump
 .. autofunction:: dump_pdf_structure
 
-"""  # noqa
+"""
 
-from __future__ import annotations, generator_stop
+from __future__ import annotations
 
 import logging
 import re
@@ -324,7 +324,7 @@ def default_line_grouper(
         if (
             linfo.font_name.endswith("-bold")
             and not latest_linfo.font_name.endswith("-bold")
-        ) or (  # noqa
+        ) or (
             latest_linfo.font_name.endswith("-bold")
             and not linfo.font_name.endswith("-bold")
         ):
@@ -334,10 +334,7 @@ def default_line_grouper(
 
         # take care allowed_y_diff may be 0, 1.1 found empirically
         allowed_y_diff = max(allowed_y_diff, min_y_diff)
-        if diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
-            return True
-
-        return False
+        return diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff
 
     return default_group_line
 
@@ -356,10 +353,7 @@ def default_text_merger(
 
     def default_merge_text(block: TextBlock, ltchar: LTChar) -> bool:
         width = ltchar.width * width_factor
-        if (ltchar.x0 - block.x1) <= width:
-            return True
-
-        return False
+        return (ltchar.x0 - block.x1) <= width
 
     return default_merge_text
 
@@ -422,8 +416,7 @@ def relayout(
         items: Iterable[tuple[float, list[LTChar]]],
     ) -> Iterator[LTChar]:
         for _, ltchars in sorted(items):
-            for ltchar in ltchars:
-                yield ltchar
+            yield from ltchars
 
     # Collect ltchar instances
     ltline_index: dict[tuple[float, str, float], dict[float, list[LTChar]]] = (
@@ -532,11 +525,7 @@ def _line_group(
 
     # create a new group if there are too much vertical spacing
     # between the previous line and the current line
-    if (group[-1].y0 - line.y0) > (line.font_size * 2):
-        group = LinesGroup()
-        group_index[start_index].append(group)
-    # or if previous line overlap x coordinate
-    elif (
+    if (group[-1].y0 - line.y0) > (line.font_size * 2) or (
         previous_line_group is not None
         and previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
         and previous_line_group[-1].blocks[0].x0 < line.blocks[-1].x1
@@ -575,7 +564,7 @@ def _dump_ltline_index(
     """
     res = []
     for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
-        res.append("{}: {}".format(key, _dump_ltchar_index(ltchar_index)))
+        res.append(f"{key}: {_dump_ltchar_index(ltchar_index)}")
     return "\n".join(res)
 
 
@@ -662,10 +651,10 @@ class TextBlock:
         self.latest_x0 = x0
 
     def __repr__(self) -> str:
-        return "<{!r} ({}, {})]>".format(self.text, self.x0, self.x1)
+        return f"<{self.text!r} ({self.x0}, {self.x1})]>"
 
     def __str__(self) -> str:
-        return "<{!r}>".format(self.text)
+        return f"<{self.text!r}>"
 
     def append(self, text: str, x0: float, x1: float, font_size: float) -> None:
         assert self.x0 <= x0, (self.x0, x0, self.text, text)
@@ -692,7 +681,7 @@ def dump_pdf_structure(
     """
     with open(filepath, "rb") as stream:
         for i, page in enumerate(iter_pdf_ltpages(stream, pages=pages)):
-            print("{} page {}".format("*" * 80, i + 1))
+            print("{} page {}".format("*" * 80, i + 1))  # noqa: T201
             objstack = [("", o) for o in reversed(page._objs)]
             while objstack:
                 prefix, b = objstack.pop()
@@ -726,7 +715,7 @@ def py_dump(
 
     with open(filepath, "rb") as input_stream:
         for i, page in enumerate(iter_pdf_ltpages(input_stream, pages=pages)):
-            print("\npage{} = ".format(i + 1), file=out, end="")
+            print(f"\npage{i + 1} = ", file=out, end="")
             py_dump_ltobj(page, out=out, skip_classes=skip_classes)
 
 

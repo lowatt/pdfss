@@ -1,11 +1,11 @@
-from io import StringIO
-from typing import Any
-from pdfminer.layout import LTChar
-from os.path import abspath, dirname, join
 import unittest
+from io import StringIO
+from os.path import abspath, dirname, join
+from typing import Any
+
+from pdfminer.layout import LTChar
 
 import pdfss
-
 
 HERE = abspath(dirname(__file__))
 
@@ -40,10 +40,7 @@ def _relayout(filename: str) -> list[list[list[str]]]:
             return False
         if ltchar.fontname == "PictosSIMM":
             return False
-        if ltchar.fontsize > 100:  # type: ignore[attr-defined]
-            return False
-
-        return True
+        return not ltchar.fontsize > 100  # type: ignore[attr-defined]
 
     filepath = datafile(filename)
     with open(filepath) as stream:

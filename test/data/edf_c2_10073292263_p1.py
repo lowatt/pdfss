@@ -2,11 +2,11 @@ from pdfminer.layout import (
     LTAnno,
     LTChar,
     LTPage,
-    LTTextLineHorizontal,
     LTTextBoxHorizontal,
+    LTTextLineHorizontal,
 )
-from pdfss import ltobj
 
+from pdfss import ltobj
 
 page1 = ltobj(
     LTPage,
