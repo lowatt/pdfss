@@ -14,6 +14,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -22,6 +24,7 @@ classifiers = [
 requires-python = ">=3.9"
 dynamic = ["version"]
 dependencies = [
+    "typing-extensions",
     "pdfminer.six",
 ]
 
@@ -43,13 +46,3 @@ source = "vcs"
 
 [tool.hatch.version.raw-options]
 local_scheme = "no-local-version"
-
-[tool.black]
-target-version = ['py39']
-include = '\.pyi?$'
-exclude = '(\.tox|\.git)'
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-known_first_party = ["pdfss"]

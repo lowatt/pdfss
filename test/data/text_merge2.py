@@ -1,6 +1,6 @@
-from pdfminer.layout import *
-from pdfss import ltobj
+from pdfminer.layout import LTAnno, LTChar, LTPage, LTTextLineHorizontal
 
+from pdfss import ltobj
 
 page1 = ltobj(
     LTPage,

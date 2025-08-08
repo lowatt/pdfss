@@ -63,9 +63,9 @@ Dump PDF data structures
 .. autofunction:: py_dump
 .. autofunction:: dump_pdf_structure
 
-"""  # noqa
+"""
 
-from __future__ import generator_stop
+from __future__ import annotations
 
 import logging
 import re
@@ -73,11 +73,12 @@ import sys
 import zlib
 from bisect import bisect
 from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import date
 from functools import partial
 from io import BytesIO, TextIOWrapper
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO, Any, BinaryIO
 
 from pdfminer import settings
 from pdfminer.converter import PDFPageAggregator
@@ -86,10 +87,12 @@ from pdfminer.layout import (
     LAParams,
     LTAnno,
     LTChar,
+    LTComponent,
     LTContainer,
     LTCurve,
     LTFigure,
     LTImage,
+    LTItem,
     LTLine,
     LTPage,
     LTRect,
@@ -99,6 +102,7 @@ from pdfminer.layout import (
 )
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
+from typing_extensions import Self
 
 settings.STRICT = True
 
@@ -118,14 +122,14 @@ DEFAULT_SKIP_CLASSES = (
 orig_decompress = zlib.decompress
 
 
-def hacked_decompress(data):
+def hacked_decompress(data: bytes) -> bytes:
     try:
         return orig_decompress(data)
     except zlib.error:
         return decompress_corrupted(data)
 
 
-def decompress_corrupted(data):
+def decompress_corrupted(data: bytes) -> bytes:
     d = zlib.decompressobj(zlib.MAX_WBITS | 32)
     f = BytesIO(data)
     result_str = b""
@@ -156,7 +160,9 @@ def pdf2text(stream: IO[bytes]) -> TextIOWrapper:
     return TextIOWrapper(bytes_stream, "utf-8")
 
 
-def iter_pdf_ltpages(stream, pages=None):
+def iter_pdf_ltpages(
+    stream: BinaryIO, pages: list[int] | None = None
+) -> Iterator[LTPage]:
     """Return a generator on :class:!`pdfminer.layout.LTPage` of each page in the
     given PDF `stream`.
 
@@ -212,7 +218,7 @@ def c_amount_float(value: str) -> float:
     return round(c_str_float(value) * factor, 6)
 
 
-def c_amount_float_unit(value: str) -> Tuple[float, str]:
+def c_amount_float_unit(value: str) -> tuple[float, str]:
     """
     >>> c_amount_float_unit('25 028,80 €/mois')
     (25028.8, 'mois')
@@ -221,7 +227,7 @@ def c_amount_float_unit(value: str) -> Tuple[float, str]:
     return (c_amount_float(amount_str), unit.strip())
 
 
-def c_percent_float(value: str) -> Union[int, float]:
+def c_percent_float(value: str) -> int | float:
     """
     >>> c_percent_float('20,00%')
     20.0
@@ -229,7 +235,7 @@ def c_percent_float(value: str) -> Union[int, float]:
     return c_str_float(value.replace("%", ""))
 
 
-def c_str_period(value: str) -> Tuple[date, date]:
+def c_str_period(value: str) -> tuple[date, date]:
     """
     >>> c_str_period('du 01/05/2018 au 31/05/2018')
     (datetime.date(2018, 5, 1), datetime.date(2018, 5, 31))
@@ -239,7 +245,7 @@ def c_str_period(value: str) -> Tuple[date, date]:
     return (c_dmy_date(from_date_str), c_dmy_date(to_date_str))
 
 
-def c_str_float_unit(value: str) -> Tuple[Union[int, float], str]:
+def c_str_float_unit(value: str) -> tuple[int | float, str]:
     """
     >>> c_str_float_unit('25 028 kWh')
     (25028, 'kWh')
@@ -250,7 +256,7 @@ def c_str_float_unit(value: str) -> Tuple[Union[int, float], str]:
     return c_str_float(float_str.strip()), unit.strip()
 
 
-def c_str_float(value: str) -> Union[int, float]:
+def c_str_float(value: str) -> int | float:
     """
     >>> c_str_float('25 028,80')
     25028.8
@@ -288,9 +294,9 @@ class LineInfo:
 
 
 def default_line_grouper(
-    font_size_diff_factor=0.15,
-    min_y_diff=1.1,
-):
+    font_size_diff_factor: float = 0.15,
+    min_y_diff: float = 1.1,
+) -> Callable[[LineInfo, LineInfo], bool]:
     """Return a line grouper function suitable for `group_line` argument of
     :func:`relayout`, configured with arguments.
 
@@ -306,7 +312,7 @@ def default_line_grouper(
 
     """
 
-    def default_group_line(linfo, latest_linfo):
+    def default_group_line(linfo: LineInfo, latest_linfo: LineInfo) -> bool:
         """Default line grouping function, merging lines if font size are compatible and
         Y coordinate diff is below some factor of font size, considering bold
         font variant.
@@ -319,7 +325,7 @@ def default_line_grouper(
         if (
             linfo.font_name.endswith("-bold")
             and not latest_linfo.font_name.endswith("-bold")
-        ) or (  # noqa
+        ) or (
             latest_linfo.font_name.endswith("-bold")
             and not linfo.font_name.endswith("-bold")
         ):
@@ -329,15 +335,14 @@ def default_line_grouper(
 
         # take care allowed_y_diff may be 0, 1.1 found empirically
         allowed_y_diff = max(allowed_y_diff, min_y_diff)
-        if diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff:
-            return True
-
-        return False
+        return diff < allowed_diff and (latest_linfo.y0 - linfo.y0) <= allowed_y_diff
 
     return default_group_line
 
 
-def default_text_merger(width_factor=1.4):
+def default_text_merger(
+    width_factor: float = 1.4,
+) -> Callable[[TextBlock, LTChar], bool]:
     """Return a text merger function suitable for `merge_text` argument of
     :func:`relayout`, configured with arguments.
 
@@ -347,17 +352,16 @@ def default_text_merger(width_factor=1.4):
 
     """
 
-    def default_merge_text(block, ltchar):
+    def default_merge_text(block: TextBlock, ltchar: LTChar) -> bool:
         width = ltchar.width * width_factor
-        if (ltchar.x0 - block.x1) <= width:
-            return True
-
-        return False
+        return (ltchar.x0 - block.x1) <= width
 
     return default_merge_text
 
 
-def default_iter_text(ltobj, skip_classes=None):
+def default_iter_text(
+    ltobj: LTComponent, skip_classes: tuple[type[LTComponent], ...] | None = None
+) -> Iterator[LTChar | LTAnno]:
     if skip_classes is not None and isinstance(ltobj, skip_classes):
         return
 
@@ -373,14 +377,16 @@ def default_iter_text(ltobj, skip_classes=None):
 
 
 def relayout(
-    ltobj,
-    skip_classes=DEFAULT_SKIP_CLASSES,
-    skip_text=None,
-    iter_text=default_iter_text,
-    ltchar_filter=None,
-    merge_text=default_text_merger(),  # noqa
-    group_line=default_line_grouper(),  # noqa
-):
+    ltobj: LTPage,
+    skip_classes: tuple[type[LTComponent], ...] | None = DEFAULT_SKIP_CLASSES,
+    skip_text: set[str] | None = None,
+    iter_text: Callable[
+        [LTComponent, tuple[type[LTComponent], ...] | None], Iterator[LTChar | LTAnno]
+    ] = default_iter_text,
+    ltchar_filter: Callable[[LTChar], bool] | None = None,
+    merge_text: Callable[[TextBlock, LTChar], bool] = default_text_merger(),  # noqa
+    group_line: Callable[[LineInfo, LineInfo], bool] = default_line_grouper(),  # noqa
+) -> list[LinesGroup]:
     """Return a list of :class:LinesGroup for given PDFMiner `ltobj` instance.
 
     :param skip_classes: tuple of PDFMiner classes that should be skipped (not
@@ -407,19 +413,23 @@ def relayout(
 
     """
 
-    def iter_ltchar_index_items(items):
+    def iter_ltchar_index_items(
+        items: Iterable[tuple[float, list[LTChar]]],
+    ) -> Iterator[LTChar]:
         for _, ltchars in sorted(items):
-            for ltchar in ltchars:
-                yield ltchar
+            yield from ltchars
 
     # Collect ltchar instances
-    ltline_index = defaultdict(partial(defaultdict, list))
+    ltline_index: dict[tuple[float, str, float], dict[float, list[LTChar]]] = (
+        defaultdict(partial(defaultdict, list))
+    )
     latest_is_anno = False
     # Hack for page containing a figure wrapping content while we want it
     # skipped
     if (
         len(ltobj._objs) == 1
         and isinstance(ltobj._objs[0], LTFigure)
+        and skip_classes is not None
         and LTFigure in skip_classes
     ):
         ltobj._objs = ltobj._objs[0]._objs
@@ -429,13 +439,13 @@ def relayout(
             continue
 
         # remember ltchar was preceeded by a LTAnno
-        lttext.add_space_left = latest_is_anno
+        lttext.add_space_left = latest_is_anno  # type: ignore[attr-defined]
         latest_is_anno = False
 
         if ltchar_filter is not None and not ltchar_filter(lttext):
             continue
 
-        key = (lttext.y0, lttext.fontname.lower(), lttext.fontsize)
+        key = (lttext.y0, lttext.fontname.lower(), lttext.fontsize)  # type: ignore[attr-defined]
         ltchar_index = ltline_index[key]
         ltchar_index[lttext.x0].append(lttext)
 
@@ -471,7 +481,7 @@ def relayout(
             line.append(ltchar)
 
     # Search for column groups
-    group_index = {}
+    group_index: dict[float, list[LinesGroup]] = {}
     previous_line_group = None
     for line in lines:
         group = _line_group(line, group_index, previous_line_group)
@@ -484,7 +494,11 @@ def relayout(
     )
 
 
-def _line_group(line, group_index, previous_line_group):
+def _line_group(
+    line: Line,
+    group_index: dict[float, list[LinesGroup]],
+    previous_line_group: LinesGroup | None,
+) -> LinesGroup:
     """Return :class:LinesGroup in which `line` should be added, given `group_index`
     (groups indexed per their x start index, i.e. {x0: [LinesGroup]}) and
     `previous_line_group` (the group in which line above the current one has
@@ -512,12 +526,9 @@ def _line_group(line, group_index, previous_line_group):
 
     # create a new group if there are too much vertical spacing
     # between the previous line and the current line
-    if (group[-1].y0 - line.y0) > (line.font_size * 2):
-        group = LinesGroup()
-        group_index[start_index].append(group)
-    # or if previous line overlap x coordinate
-    elif (
-        previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
+    if (group[-1].y0 - line.y0) > (line.font_size * 2) or (
+        previous_line_group is not None
+        and previous_line_group[-1].blocks[-1].x1 > line.blocks[0].x0
         and previous_line_group[-1].blocks[0].x0 < line.blocks[-1].x1
     ):
         group = LinesGroup()
@@ -526,15 +537,15 @@ def _line_group(line, group_index, previous_line_group):
     return group
 
 
-def _dump_ltchar_index(ltchar_index):
+def _dump_ltchar_index(ltchar_index: dict[float, list[LTChar]]) -> str:
     """Return string representation of :func:relayout ltchar_index data structure,
     for debugging purpose.
 
     """
 
-    def ltchar_text(ltchar, i):
+    def ltchar_text(ltchar: LTChar, i: int) -> str:
         text = ltchar.get_text()
-        if i > 0 and ltchar.add_space_left:
+        if i > 0 and ltchar.add_space_left:  # type: ignore[attr-defined]
             text = " " + text
         return text
 
@@ -545,59 +556,63 @@ def _dump_ltchar_index(ltchar_index):
     )
 
 
-def _dump_ltline_index(ltline_index):
+def _dump_ltline_index(
+    ltline_index: dict[tuple[float, str, float], dict[float, list[LTChar]]],
+) -> str:
     """Return string representation of :func:relayout ltline_index data structure,
     for debugging purpose.
 
     """
     res = []
     for key, ltchar_index in sorted(ltline_index.items(), reverse=True):
-        res.append("{}: {}".format(key, _dump_ltchar_index(ltchar_index)))
+        res.append(f"{key}: {_dump_ltchar_index(ltchar_index)}")
     return "\n".join(res)
-
-
-class LinesGroup(list):
-    """A list of :class:`Line` logically grouped."""
 
 
 class Line:
     """A logical line, holding a list of text blocks."""
 
-    def __init__(self, font_name, font_size, y0, merge_text):
+    def __init__(
+        self,
+        font_name: str,
+        font_size: float,
+        y0: float,
+        merge_text: Callable[[TextBlock, LTChar], bool],
+    ):
         self.font_name = font_name
         self.font_size = font_size
         # ordered list of ltchar.x0, use index to get matching ltline from
         # :attr:`blocks`
-        self._block_index = []
+        self._block_index: list[float] = []
         # slave list of block
-        self.blocks = []
+        self.blocks: list[TextBlock] = []
         self.y0 = y0
         self.merge_text = merge_text
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         blocks_str = []
         for block in self.blocks:
             blocks_str.append(repr(block))
         return "[{}: {}]".format(self.font_size, ", ".join(blocks_str))
 
-    def __str__(self):
+    def __str__(self) -> str:
         blocks_str = []
         for block in self.blocks:
             blocks_str.append(str(block))
 
         return "[{}]".format(", ".join(blocks_str))
 
-    def insert_blank_at(self, index):
+    def insert_blank_at(self, index: int) -> None:
         self.blocks.insert(0, TextBlock("", 0, 0, 0))
         self._block_index.insert(0, 0)
 
-    def append(self, ltchar):
+    def append(self, ltchar: LTChar) -> None:
         if ltchar.width == 0:
             # some chars (picto) have width = 0, set it relative to font size
             # arbitrarily, it's still better than 0. 10 division factor was
             # found empirically.
-            assert ltchar.fontsize
-            ltchar.width = ltchar.fontsize / 10
+            assert ltchar.fontsize  # type: ignore[attr-defined]
+            ltchar.width = ltchar.fontsize / 10  # type: ignore[attr-defined]
             ltchar.x1 = ltchar.x0 + ltchar.width
 
         index = bisect(self._block_index, ltchar.x1)
@@ -605,16 +620,20 @@ class Line:
         if index > 0 and self.merge_text(self.blocks[index - 1], ltchar):
             block = self.blocks[index - 1]
             text = ltchar.get_text()
-            if ltchar.add_space_left:
+            if ltchar.add_space_left:  # type: ignore[attr-defined]
                 text = " " + text
-            block.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)
+            block.append(text, ltchar.x0, ltchar.x1, ltchar.fontsize)  # type: ignore[attr-defined]
             self._block_index[index - 1] = ltchar.x1
         else:
-            block = TextBlock(ltchar.get_text(), ltchar.x0, ltchar.x1, ltchar.fontsize)
+            block = TextBlock(ltchar.get_text(), ltchar.x0, ltchar.x1, ltchar.fontsize)  # type: ignore[attr-defined]
             self.blocks.insert(index, block)
             self._block_index.insert(index, ltchar.x1)
 
         assert len(self.blocks) == len(self._block_index)
+
+
+class LinesGroup(list[Line]):
+    """A list of :class:`Line` logically grouped."""
 
 
 class TextBlock:
@@ -626,19 +645,19 @@ class TextBlock:
     :attr latest_x0: the left coordinate of the latest char in the block
     """
 
-    def __init__(self, text, x0, x1, font_size):
+    def __init__(self, text: str, x0: float, x1: float, font_size: float):
         self.text = text
         self.x0 = x0
         self.x1 = x1
         self.latest_x0 = x0
 
-    def __repr__(self):
-        return "<{!r} ({}, {})]>".format(self.text, self.x0, self.x1)
+    def __repr__(self) -> str:
+        return f"<{self.text!r} ({self.x0}, {self.x1})]>"
 
-    def __str__(self):
-        return "<{!r}>".format(self.text)
+    def __str__(self) -> str:
+        return f"<{self.text!r}>"
 
-    def append(self, text, x0, x1, font_size):
+    def append(self, text: str, x0: float, x1: float, font_size: float) -> None:
         assert self.x0 <= x0, (self.x0, x0, self.text, text)
         assert self.x1 <= x1, (self.x1, x1, self.text, text)
         self.x1 = x1
@@ -649,7 +668,9 @@ class TextBlock:
 # Dump PDF data structures #############################################
 
 
-def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
+def dump_pdf_structure(
+    filepath: str, pages: list[int] | None = None, file: IO[str] = sys.stdout
+) -> None:
     """Print PDFMiner's structure extracted from the given PDF file, to help
     debugging or building scrapers.
 
@@ -661,18 +682,23 @@ def dump_pdf_structure(filepath, pages=None, file=sys.stdout):
     """
     with open(filepath, "rb") as stream:
         for i, page in enumerate(iter_pdf_ltpages(stream, pages=pages)):
-            print("{} page {}".format("*" * 80, i + 1))
+            print("{} page {}".format("*" * 80, i + 1))  # noqa: T201
             objstack = [("", o) for o in reversed(page._objs)]
             while objstack:
                 prefix, b = objstack.pop()
                 if type(b) in [LTTextBox, LTTextLine, LTTextBoxHorizontal]:
                     print(prefix, b, file=file)
-                    objstack += ((prefix + "  ", o) for o in reversed(b._objs))
+                    objstack += ((prefix + "  ", o) for o in reversed(b._objs))  # type: ignore[attr-defined]
                 else:
                     print(prefix, b, file=file)
 
 
-def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=DEFAULT_SKIP_CLASSES):
+def py_dump(
+    filepath: str,
+    out: IO[str] = sys.stdout,
+    pages: list[int] | None = None,
+    skip_classes: tuple[type[LTComponent], ...] = DEFAULT_SKIP_CLASSES,
+) -> None:
     """Dump PDF `filepath` file as an importable python structure in `out` stream.
 
     :param filepath: path to the PDF file.
@@ -690,11 +716,16 @@ def py_dump(filepath, out=sys.stdout, pages=None, skip_classes=DEFAULT_SKIP_CLAS
 
     with open(filepath, "rb") as input_stream:
         for i, page in enumerate(iter_pdf_ltpages(input_stream, pages=pages)):
-            print("\npage{} = ".format(i + 1), file=out, end="")
+            print(f"\npage{i + 1} = ", file=out, end="")
             py_dump_ltobj(page, out=out, skip_classes=skip_classes)
 
 
-def py_dump_ltobj(ltobj, out=sys.stdout, skip_classes=None, indent=0):
+def py_dump_ltobj(
+    ltobj: LTComponent,
+    out: IO[str] = sys.stdout,
+    skip_classes: tuple[type[LTComponent], ...] | None = None,
+    indent: int = 0,
+) -> None:
     """Dump PDFMiner `ltobj` object as an importable python structure in `out`
     stream.
 
@@ -741,22 +772,27 @@ class ltobj:
     **You should not use this directly**.
     """
 
-    def __init__(self, __class__, __dict__, objs=None):
-        self.__class__ = __class__
+    def __init__(
+        self,
+        __class__: type[LTItem],
+        __dict__: dict[str, Any],
+        objs: list[Self] | None = None,
+    ):
+        self.__class__ = __class__  # type: ignore[assignment]
         self.__dict__ = __dict__
         if objs is not None:
             self._objs = objs
         if "x0" in __dict__:
             # bbox necessary for repr() but not exported
-            self.bbox = (self.x0, self.y0, self.x1, self.y1)
+            self.bbox = (self.x0, self.y0, self.x1, self.y1)  # type: ignore[attr-defined]
 
 
-def _clean_ltobj_dict(__dict__):
+def _clean_ltobj_dict(__dict__: dict[str, Any]) -> dict[str, Any]:
     """Return a dictionary from an ltobj's __dict__, removing entries that should
     not be exported and rounding float for better readability.
     """
 
-    def round_value(v):
+    def round_value(v: Any) -> Any:
         if isinstance(v, float):
             return round(v, 2)
         if isinstance(v, tuple):
@@ -770,9 +806,16 @@ def _clean_ltobj_dict(__dict__):
     }
 
 
-def _ltchar_record_fontsize_init(self, matrix, font, fontsize, *args, **kwargs):
+def _ltchar_record_fontsize_init(
+    self: LTChar,
+    matrix: tuple[float, float, float, float, float, float],
+    font: Any,
+    fontsize: float,
+    *args: Any,
+    **kwargs: Any,
+) -> None:
     ltchar_init(self, matrix, font, fontsize, *args, **kwargs)
-    self.fontsize = fontsize
+    self.fontsize = fontsize  # type: ignore[attr-defined]
 
 
 ltchar_init = LTChar.__init__
@@ -782,7 +825,7 @@ LTChar.__init__ = _ltchar_record_fontsize_init  # type: ignore[method-assign]
 ########################################################################
 
 if __name__ == "__main__":
-    pages: Optional[List[int]] = None
+    pages: list[int] | None = None
     if len(sys.argv) >= 3:
         pages = [int(arg) for arg in sys.argv[2:]]
     py_dump(sys.argv[1], pages=pages)
