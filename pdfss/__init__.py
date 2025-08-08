@@ -78,7 +78,7 @@ from dataclasses import dataclass
 from datetime import date
 from functools import partial
 from io import BytesIO, TextIOWrapper
-from typing import IO, Any, BinaryIO, Self
+from typing import IO, Any, BinaryIO
 
 from pdfminer import settings
 from pdfminer.converter import PDFPageAggregator
@@ -102,6 +102,7 @@ from pdfminer.layout import (
 )
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
+from typing_extensions import Self
 
 settings.STRICT = True
 
