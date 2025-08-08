@@ -1,4 +1,10 @@
-from pdfminer.layout import *
+from pdfminer.layout import (
+    LTAnno,
+    LTChar,
+    LTPage,
+    LTTextLineHorizontal,
+    LTTextBoxHorizontal,
+)
 from pdfss import ltobj
 
 

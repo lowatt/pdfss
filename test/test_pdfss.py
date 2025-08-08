@@ -1,4 +1,6 @@
 from io import StringIO
+from typing import Any
+from pdfminer.layout import LTChar
 from os.path import abspath, dirname, join
 import unittest
 
@@ -8,19 +10,19 @@ import pdfss
 HERE = abspath(dirname(__file__))
 
 
-def datafile(*filename):
+def datafile(*filename: str) -> str:
     return join(HERE, "data", *filename)
 
 
-def read_py(code):
-    exec_globals = {}
-    exec_locals = {}
+def read_py(code: str) -> Any:
+    exec_globals: dict[str, Any] = {}
+    exec_locals: dict[str, Any] = {}
     exec(code, exec_globals, exec_locals)
     return exec_locals
 
 
 class PDF2TextTC(unittest.TestCase):
-    def test(self):
+    def test(self) -> None:
         filepath = datafile("Lentilles.pdf")
         with open(filepath, "rb") as stream:
             text_stream = pdfss.pdf2text(stream)
@@ -32,13 +34,13 @@ class PDF2TextTC(unittest.TestCase):
         )
 
 
-def _relayout(filename):
-    def ltchar_filter(ltchar):
+def _relayout(filename: str) -> list[list[list[str]]]:
+    def ltchar_filter(ltchar: LTChar) -> bool:
         if ltchar.x0 < 12:
             return False
         if ltchar.fontname == "PictosSIMM":
             return False
-        if ltchar.fontsize > 100:
+        if ltchar.fontsize > 100:  # type: ignore[attr-defined]
             return False
 
         return True
@@ -71,7 +73,7 @@ def _relayout(filename):
             "5,50 %",
         },
     ):
-        group_result = []
+        group_result: list[list[str]] = []
         result.append(group_result)
 
         for line in group:
@@ -83,7 +85,7 @@ def _relayout(filename):
 class RelayoutTC(unittest.TestCase):
     maxDiff = None
 
-    def test_edf_c1_10074973936_p5(self):
+    def test_edf_c1_10074973936_p5(self) -> None:
         result = _relayout("edf_c1_10074973936_p5.py")
         self.assertEqual(
             result,
@@ -91,10 +93,7 @@ class RelayoutTC(unittest.TestCase):
                 [["5 / 20"]],
                 [
                     ["BALON OVALE"],
-                    [
-                        "Détail de votre facturation par site du 02/04/2018 "
-                        "n° 1007497"
-                    ],
+                    ["Détail de votre facturation par site du 02/04/2018 n° 1007497"],
                     ["Données contrat", "Données Point de Livraison"],
                     ["Contrat électricité Prix Fixe", "LE POULAYER 31560 NAILLOUX"],
                     [
@@ -257,7 +256,7 @@ class RelayoutTC(unittest.TestCase):
                         "100",
                     ],
                     [
-                        "Acheminement : Tarif HTA5 à Pointe Fixe Longue " "Utilisation",
+                        "Acheminement : Tarif HTA5 à Pointe Fixe Longue Utilisation",
                         "Opérateur Heures pleines hiver",
                         "100",
                     ],
@@ -277,7 +276,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_edf_c1_10080595767_p1(self):
+    def test_edf_c1_10080595767_p1(self) -> None:
         result = _relayout("edf_c1_10080595767_p1.py")
         self.assertEqual(
             result,
@@ -341,7 +340,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_edf_c1_10036338943_p1(self):
+    def test_edf_c1_10036338943_p1(self) -> None:
         result = _relayout("edf_c1_10036338943_p1.py")
         self.assertEqual(
             result,
@@ -387,7 +386,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_edf_c2_10073292263_p1(self):
+    def test_edf_c2_10073292263_p1(self) -> None:
         result = _relayout("edf_c2_10073292263_p1.py")
         self.assertEqual(
             result,
@@ -435,7 +434,7 @@ class RelayoutTC(unittest.TestCase):
                     ["Montant TVA (payée sur les débits)", "112 070,63 €"],
                     ["Facture TTC", "672 423,80 €"],
                     ["Montant restant dû avant facture", "1 084 117,12 €"],
-                    ["Des montants dûs antérieurs n'ont pas été totalement " "réglés."],
+                    ["Des montants dûs antérieurs n'ont pas été totalement réglés."],
                     ["Montant total à payer (TTC)", "1 756 540,92 €"],
                     ["à régler avant le 28/03/2018"],
                     [
@@ -458,12 +457,12 @@ class RelayoutTC(unittest.TestCase):
                     ["Paiement par Prélèvement automatique"],
                     ["Vous serez prélevé d'un montant de", "1 756 540,92 €"],
                     ["à partir du :", "28/03/2018"],
-                    ["sur le compte bancaire : FR XX XXXXX XXXXX " "00002009999 XX"],
+                    ["sur le compte bancaire : FR XX XXXXX XXXXX 00002009999 XX"],
                 ],
             ],
         )
 
-    def test_edf_c2_10073292263_p18(self):
+    def test_edf_c2_10073292263_p18(self) -> None:
         result = _relayout("edf_c2_10073292263_p18.py")
         self.assertEqual(
             result,
@@ -493,7 +492,7 @@ class RelayoutTC(unittest.TestCase):
                     ],
                     ["Pertes Joule : 1,000", "Opérateur Heures pleines hiver", "528"],
                     [
-                        "Acheminement : Tarif HTA5 à Pointe Fixe Longue " "Utilisation",
+                        "Acheminement : Tarif HTA5 à Pointe Fixe Longue Utilisation",
                         "Opérateur Heures creuses hiver",
                         "528",
                     ],
@@ -577,7 +576,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_edf_c2_10073292263_p30(self):
+    def test_edf_c2_10073292263_p30(self) -> None:
         result = _relayout("edf_c2_10073292263_p30.py")
         self.assertEqual(
             result,
@@ -609,7 +608,7 @@ class RelayoutTC(unittest.TestCase):
                     ],
                     ["Pertes Joule : 1,000", "Opérateur Heures pleines hiver", "585"],
                     [
-                        "Acheminement : Tarif HTA5 à Pointe Fixe " "Longue Utilisation",
+                        "Acheminement : Tarif HTA5 à Pointe Fixe Longue Utilisation",
                         "Opérateur Heures creuses hiver",
                         "585",
                     ],
@@ -671,7 +670,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_edf_c2_10067224248_p5(self):
+    def test_edf_c2_10067224248_p5(self) -> None:
         result = _relayout("edf_c2_10067224248_p5.py")
         self.assertEqual(
             result,
@@ -719,7 +718,7 @@ class RelayoutTC(unittest.TestCase):
                 [
                     ["Identifiant de comptage : 021539003020"],
                     ["Type de compteur : Compteur HTA SAPHIR"],
-                    ["Acheminement : Tarif HTA5 à Pointe Fixe " "Longue Utilisation"],
+                    ["Acheminement : Tarif HTA5 à Pointe Fixe Longue Utilisation"],
                 ],
                 [["Pertes Joule : 1,000"]],
                 [["386536", "385656"]],
@@ -782,7 +781,7 @@ class RelayoutTC(unittest.TestCase):
                         "608",
                     ],
                 ],
-                [["Index de fin de période relevés (en gras) ou estimés en " "kWh"]],
+                [["Index de fin de période relevés (en gras) ou estimés en kWh"]],
                 [["Période", "Index de début", "Index de fin"]],
                 [
                     [
@@ -910,7 +909,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_text_block_separation(self):
+    def test_text_block_separation(self) -> None:
         result = _relayout("edf_c2_10073292263_p27.py")
         self.assertEqual(
             result,
@@ -1029,21 +1028,16 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_text_merge1(self):
+    def test_text_merge1(self) -> None:
         result = _relayout("text_merge1.py")
         self.assertEqual(
             result,
             [
-                [
-                    [
-                        "Taxe Communale sur la Consommation Finale "
-                        "d'Electricité (TCCFE)"
-                    ]
-                ],
+                [["Taxe Communale sur la Consommation Finale d'Electricité (TCCFE)"]],
             ],
         )
 
-    def test_text_merge2(self):
+    def test_text_merge2(self) -> None:
         result = _relayout("text_merge2.py")
         self.assertEqual(
             result,
@@ -1052,7 +1046,7 @@ class RelayoutTC(unittest.TestCase):
             ],
         )
 
-    def test_euro_fix(self):
+    def test_euro_fix(self) -> None:
         result = _relayout("broken_euro.py")
         self.assertEqual(
             result,
@@ -1063,7 +1057,7 @@ class RelayoutTC(unittest.TestCase):
 
 
 class DumpPDFStructureTC(unittest.TestCase):
-    def test(self):
+    def test(self) -> None:
         filepath = datafile("Lentilles.pdf")
         output = StringIO()
         pdfss.dump_pdf_structure(filepath, file=output)
@@ -1077,7 +1071,7 @@ class DumpPDFStructureTC(unittest.TestCase):
 
 
 class PyDumpTC(unittest.TestCase):
-    def test(self):
+    def test(self) -> None:
         filepath = datafile("Lentilles.pdf")
         out = StringIO()
         pdfss.py_dump(filepath, out=out)
